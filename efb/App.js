@@ -1,53 +1,120 @@
-import { StyleSheet } from 'react-native';
-import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Icon } from 'leaflet';
-import React from 'react';
-//import { getCurrentPosition } from 'react-native-geolocation-service'
+import { StyleSheet, Text, View, Button } from 'react-native';
+// use effect
+import React, { useEffect, useState } from 'react';
+import * as Location from "expo-location";
+// // react native maps
+import MapView from 'react-native-maps';
+import { UrlTile, Marker, Polyline, Polygon } from 'react-native-maps';
 
-const markerIcon = '../assets/airplane.png';
+// // latitude and longitude
+const latitude = 37.78825;
+const longitude = -122.4324;
+// polygon coordinates
+const polygon = [
+  { latitude: 37.8025259, longitude: -122.4351431 },
+  { latitude: 37.7896386, longitude: -122.421646 },
+  { latitude: 37.7665248, longitude: -122.4161628 },
+  { latitude: 37.7734153, longitude: -122.4577787 },
+  { latitude: 37.7948605, longitude: -122.4596065 },
+];
+// polyline coordinates
 
-
+// const getDeviceCurrentLocation = async () => {
+  //   return new Promise((resolve, reject) =>
+  //     GeoLocation.getCurrentPosition(
+    //       (position) => {
+      //         resolve(position);
+      //       },
+      //       (error) => {
+        //         reject(error);
+        //       },
+        //       {
+          //         enableHighAccuracy: true, // Whether to use high accuracy mode or not
+          //         timeout: 15000, // Request timeout
+          //         maximumAge: 10000 // How long previous location will be cached
+          //       }
+          //     )
+          //   );
+          // };
+          
 export default function App() {
-  //const [position, setPosition] = React.useState({latitude: 0, longitude: 0})
-  // React.useEffect(() => {
-  //   const positionalListeners = getCurrentPosition(
-  //     (res) => {
-  //       const position = {
-  //         latitude: res.latitude,
-  //         longitude: res.longitude,
-  //       };
-  //       console.log(position);
-  //       setPosition(position);
-  //     },
-  //     (err) => {
-  //       console.log(err);
-  //     },
-  //     { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-  //   )
-  //   return positionalListeners;
-  // }, [])
-  // console.log(position);
+            
+  const [location, setLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
 
-  return (
-      <MapContainer center={[51.505, -0.09]} zoom={13} scrollWheelZoom={false} style={{ height: '100vh', width: '100%' }}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="http://{s}.google.com/vt?lyrs=m&x={x}&y={y}&z={z}"
-          subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
-          />
-        <Marker position={[51.505, -0.09]} icon={new Icon({iconUrl: markerIcon, iconAnchor:[12,41], iconSize:[24,41]}) }>
-          <Popup>
-            A pretty CSS3 popup. <br /> Easily customizable.
-          </Popup>
-        </Marker>
-      </MapContainer>
+  useEffect(() => {
+    const getLocation = async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+
+        if (status !== "granted") {
+          setLocationError("Location permission denied");
+          return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        setLocation(location);
+      } catch (error) {
+        console.error("Error requesting location permission:", error);
+      }
+    };
+    getLocation();
+  }, []);
+
+  console.log(location);
+
+  const { latitude, longitude } = location?.coords || {};
+
+  // return map on current location
+  return(
+    <View style={styles.container}>
+      <Text>Open up App.js to start working on your app!</Text>
+      <MapView
+        style={{width: 400, height: 400}}
+        initialRegion={{
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}
+      >
+        <Marker
+          coordinate={{latitude: latitude, longitude: longitude}}
+          title={'My Marker'}
+          description={'This is my marker'}
+        />
+      </MapView>
+    </View>
   );
+  // return(
+  //   // draw polygon
+  //   // tiles
+  //   <View style={styles.container}>
+  //     <Text>Open up App.js to start working on your app!</Text>
+  //     <MapView
+  //       style={{width: 400, height: 400}}
+  //       initialRegion={{
+  //         latitude: 37.78825,
+  //         longitude: -122.4324,
+  //         latitudeDelta: 0.0922,
+  //         longitudeDelta: 0.0421,
+  //       }}
+  //     >
+  //       <Polygon
+  //         coordinates={polygon}
+  //         fillColor={'rgba(100, 200, 200, 0.3)'}
+  //         strokeWidth={2}
+  //       />
+  //     </MapView>
+  //   </View>
+  // );
 }
 
 const styles = StyleSheet.create({
   container: {
-    height: 'auto',
-    width: 'auto',
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
