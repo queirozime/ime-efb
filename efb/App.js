@@ -42,6 +42,8 @@ export default function App() {
   const [location, setLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
 
+  const [pathTile,setPathTile] = useState(null)
+
   useEffect(() => {
     const getLocation = async () => {
       try {
@@ -68,9 +70,8 @@ export default function App() {
   // return map on current location
   return(
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
       <MapView
-        style={{width: 400, height: 400}}
+        style={{width: "100%", height: "80%"}}
         initialRegion={{
           latitude: latitude,
           longitude: longitude,
@@ -78,12 +79,24 @@ export default function App() {
           longitudeDelta: 0.0421,
         }}
       >
+      {pathTile?
+        <LocalTile
+          pathTemplate={pathTile}
+          tileSize={256}
+        />:
+        null}
         <Marker
           coordinate={{latitude: latitude, longitude: longitude}}
           title={'My Marker'}
           description={'This is my marker'}
         />
       </MapView>
+      <Button
+        // onPress={}
+        title="Load Map"
+        color="#fff"
+        accessibilityLabel="Take Url From"
+      />
     </View>
   );
   // return(
@@ -113,7 +126,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
   },
