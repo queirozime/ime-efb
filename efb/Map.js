@@ -1,21 +1,80 @@
-import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Icon } from 'leaflet';
+import * as Location from "expo-location";
+import MapView from 'react-native-maps';
+import { Marker } from 'react-native-maps';
+import { useState, useEffect } from "react";
+import { StyleSheet, View, Button } from "react-native";
 
 const Map = () => {
+    const [location, setLocation] = useState(
+        {
+            latitude: -22.9, 
+            longitude: -43.2, 
+            latitudeDelta: 0.0922, 
+            longitudeDelta: 0.0421
+        }
+    );
+    const [locationError, setLocationError] = useState(null);
+    const [pathTile,setPathTile] = useState(null);
+    const [region, setRegion] = useState(null);
+
+    const getLocation = async () => {
+        try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+
+        if (status !== "granted") {
+            setLocationError("Location permission denied");
+            return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        setLocation(location);
+        } catch (error) {
+        console.error("Error requesting location permission:", error);
+        }
+    };
+
+    useEffect(() => {
+        getLocation();
+    }, []);
+
+    console.log(location);
+
+    const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#000',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    });
+
+    const { latitude, longitude } = location?.coords || {};
     return (
-        <MapContainer center={[51.505, -0.09]} zoom={13} scrollWheelZoom={false} style={{ height: '100vh', width: '100%' }}>
-            <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="http://{s}.google.com/vt?lyrs=m&x={x}&y={y}&z={z}"
-            subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
-            />
-            <Marker position={[51.505, -0.09]} icon={new Icon({iconUrl: markerIcon, iconAnchor:[12,41], iconSize:[24,41]}) }>
-            <Popup>
-                A pretty CSS3 popup. <br /> Easily customizable.
-            </Popup>
-            </Marker>
-        </MapContainer>
+        <View style={styles.container}>
+            <MapView
+            style={{width: "100%", height: "80%"}}
+            followsUserLocation={true}
+            showsUserLocation={true}
+            initialRegion={{
+                latitude: latitude,
+                longitude: longitude,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+            }}
+            >
+                {pathTile?
+                <LocalTile
+                    pathTemplate={pathTile}
+                    tileSize={256}
+                />:
+                null}
+                <Marker
+                    coordinate={{latitude: latitude, longitude: longitude}}
+                    title={'My Marker'}
+                    description={'This is my marker'}
+                />
+            </MapView>
+        </View>
     )
 }
 
