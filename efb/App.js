@@ -6,6 +6,9 @@ import * as Location from "expo-location";
 import MapView from 'react-native-maps';
 import { UrlTile, Marker, Polyline, Polygon } from 'react-native-maps';
 
+
+import GetLocalFile from './LocalFile';
+
 // // latitude and longitude
 const latitude = 37.78825;
 const longitude = -122.4324;
@@ -92,7 +95,7 @@ export default function App() {
         />
       </MapView>
       <Button
-        // onPress={}
+        onPress={async ()=>{await GetLocalFile()} }
         title="Load Map"
         color="#fff"
         accessibilityLabel="Take Url From"
