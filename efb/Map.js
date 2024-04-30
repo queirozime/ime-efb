@@ -1,8 +1,9 @@
 import * as Location from "expo-location";
-import MapView from 'react-native-maps';
+import MapView, { LocalTile, UrlTile } from 'react-native-maps';
 import { Marker } from 'react-native-maps';
 import { useState, useEffect } from "react";
 import { StyleSheet, View, Button } from "react-native";
+import * as FileSystem from 'expo-file-system';
 
 const Map = () => {
     const [location, setLocation] = useState(
@@ -14,8 +15,9 @@ const Map = () => {
         }
     );
     const [locationError, setLocationError] = useState(null);
-    const [pathTile,setPathTile] = useState(null);
+    const [pathTile,setPathTile] = useState('home/output/{z}/{x}/{y}.png');
     const [region, setRegion] = useState(null);
+    console.log(FileSystem.documentDirectory)
 
     const getLocation = async () => {
         try {
@@ -36,8 +38,6 @@ const Map = () => {
     useEffect(() => {
         getLocation();
     }, []);
-
-    console.log(location);
 
     const styles = StyleSheet.create({
     container: {
@@ -62,12 +62,19 @@ const Map = () => {
                 longitudeDelta: 0.0421,
             }}
             >
-                {pathTile?
-                <LocalTile
+                {/* <LocalTile 
                     pathTemplate={pathTile}
-                    tileSize={256}
-                />:
-                null}
+                /> */}
+                {/* <UrlTile 
+                    urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    maximumZ={19}
+                    minimumZ={10}
+                /> */}
+                <UrlTile 
+                    urlTemplate="file://OnMyIphone/output/{z}/{x}/{y}.png"
+                    maximumZ={19}
+                    minimumZ={10}
+                />
                 <Marker
                     coordinate={{latitude: latitude, longitude: longitude}}
                     title={'My Marker'}
