@@ -1,13 +1,13 @@
-import { StyleSheet, Text, View, Button } from 'react-native';
+import { StyleSheet, Text, View, Button, Platform } from 'react-native';
 // use effect
 import React, { useEffect, useState } from 'react';
 import * as Location from "expo-location";
 // // react native maps
 import MapView from 'react-native-maps';
-import { UrlTile, Marker, Polyline, Polygon } from 'react-native-maps';
+import { LocalTile, Marker, Polyline, Polygon } from 'react-native-maps';
 
 
-import GetLocalFile from './LocalFile';
+import * as local from './LocalFiles';
 
 // // latitude and longitude
 const latitude = 37.78825;
@@ -84,6 +84,7 @@ export default function App() {
       >
       {pathTile?
         <LocalTile
+          mapType={Platform.OS == "android" ? "none" : "standard"}
           pathTemplate={pathTile}
           tileSize={256}
         />:
@@ -95,7 +96,12 @@ export default function App() {
         />
       </MapView>
       <Button
-        onPress={async ()=>{await GetLocalFile()} }
+        onPress={async ()=>{
+          // uri = await local.GetLocalFile()
+          // setPathTile("file://"+uri+"/output/{z}/{x}/{y}.png")
+          local.downloadFolder("http://techslides.com/demos/sample-videos/small.mp4","teste")
+          // console.log(pathTile)
+          } }
         title="Load Map"
         color="#fff"
         accessibilityLabel="Take Url From"
