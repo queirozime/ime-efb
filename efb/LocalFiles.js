@@ -100,9 +100,7 @@ export async function downloadFolder(uriDownload,title){
     uriDownload,
     path + title,
     {},
-    (downloadProgress) => {
-      callback(downloadProgress)
-    }
+    callback
   );
   
   await readDirectory(path)
