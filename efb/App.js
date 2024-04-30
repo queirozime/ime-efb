@@ -97,12 +97,12 @@ export default function App() {
       </MapView>
       <Button
         onPress={async ()=>{
+          local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
           // uri = await local.GetLocalFile()
           // setPathTile("file://"+uri+"/output/{z}/{x}/{y}.png")
-          local.downloadFolder("http://techslides.com/demos/sample-videos/small.mp4","teste")
           // console.log(pathTile)
           } }
-        title="Load Map"
+        title="Download Map"
         color="#fff"
         accessibilityLabel="Take Url From"
       />
