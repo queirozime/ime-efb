@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, Button, Platform } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import * as Location from "expo-location";
 // // react native maps
-import MapView from 'react-native-maps';
+import MapView, { UrlTile } from 'react-native-maps';
 import { LocalTile, Marker, Polyline, Polygon } from 'react-native-maps';
 
 
@@ -42,27 +42,34 @@ const polygon = [
           
 export default function App() {
             
-  const [location, setLocation] = useState(null);
+  const [location, setLocation] = useState(
+    {
+        latitude: -22.9, 
+        longitude: -43.2, 
+        latitudeDelta: 0.0922, 
+        longitudeDelta: 0.0421
+    }
+);
   const [locationError, setLocationError] = useState(null);
 
   const [pathTile,setPathTile] = useState(null)
+  const getLocation = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        setLocationError("Location permission denied");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    } catch (error) {
+      console.error("Error requesting location permission:", error);
+    }
+  };
 
   useEffect(() => {
-    const getLocation = async () => {
-      try {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-
-        if (status !== "granted") {
-          setLocationError("Location permission denied");
-          return;
-        }
-
-        let location = await Location.getCurrentPositionAsync({});
-        setLocation(location);
-      } catch (error) {
-        console.error("Error requesting location permission:", error);
-      }
-    };
     getLocation();
   }, []);
 
@@ -75,6 +82,8 @@ export default function App() {
     <View style={styles.container}>
       <MapView
         style={{width: "100%", height: "80%"}}
+        followsUserLocation={true}
+        showsUserLocation={true}
         initialRegion={{
           latitude: latitude,
           longitude: longitude,
@@ -82,20 +91,14 @@ export default function App() {
           longitudeDelta: 0.0421,
         }}
       >
-      {pathTile?
-        <LocalTile
-          mapType={Platform.OS == "android" ? "none" : "standard"}
-          pathTemplate={pathTile}
-          tileSize={256}
-        />:
-        null}
+        <UrlTile urlTemplate={'http://172.15.6.112:5000/{z}/{x}/{y}.png'} shouldReplaceMapContent={false}/>
         <Marker
           coordinate={{latitude: latitude, longitude: longitude}}
           title={'My Marker'}
           description={'This is my marker'}
         />
       </MapView>
-      <Button
+      {/* <Button
         onPress={async ()=>{
           local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
           // uri = await local.GetLocalFile()
@@ -105,31 +108,9 @@ export default function App() {
         title="Download Map"
         color="#fff"
         accessibilityLabel="Take Url From"
-      />
+      /> */}
     </View>
   );
-  // return(
-  //   // draw polygon
-  //   // tiles
-  //   <View style={styles.container}>
-  //     <Text>Open up App.js to start working on your app!</Text>
-  //     <MapView
-  //       style={{width: 400, height: 400}}
-  //       initialRegion={{
-  //         latitude: 37.78825,
-  //         longitude: -122.4324,
-  //         latitudeDelta: 0.0922,
-  //         longitudeDelta: 0.0421,
-  //       }}
-  //     >
-  //       <Polygon
-  //         coordinates={polygon}
-  //         fillColor={'rgba(100, 200, 200, 0.3)'}
-  //         strokeWidth={2}
-  //       />
-  //     </MapView>
-  //   </View>
-  // );
 }
 
 const styles = StyleSheet.create({
