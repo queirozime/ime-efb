@@ -3,6 +3,9 @@
 # dependencies
 node_modules/
 
+tile-api/public/
+
+
 # Expo
 .expo/
 dist/
@@ -33,3 +36,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+#maps
+*.tif

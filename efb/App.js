@@ -1,11 +1,114 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Button, Platform } from 'react-native';
+// use effect
+import React, { useEffect, useState } from 'react';
+import * as Location from "expo-location";
+// // react native maps
+import MapView, { UrlTile } from 'react-native-maps';
+import { LocalTile, Marker, Polyline, Polygon } from 'react-native-maps';
 
+
+import * as local from './LocalFiles';
+
+// // latitude and longitude
+const latitude = 37.78825;
+const longitude = -122.4324;
+// polygon coordinates
+const polygon = [
+  { latitude: 37.8025259, longitude: -122.4351431 },
+  { latitude: 37.7896386, longitude: -122.421646 },
+  { latitude: 37.7665248, longitude: -122.4161628 },
+  { latitude: 37.7734153, longitude: -122.4577787 },
+  { latitude: 37.7948605, longitude: -122.4596065 },
+];
+// polyline coordinates
+
+// const getDeviceCurrentLocation = async () => {
+  //   return new Promise((resolve, reject) =>
+  //     GeoLocation.getCurrentPosition(
+    //       (position) => {
+      //         resolve(position);
+      //       },
+      //       (error) => {
+        //         reject(error);
+        //       },
+        //       {
+          //         enableHighAccuracy: true, // Whether to use high accuracy mode or not
+          //         timeout: 15000, // Request timeout
+          //         maximumAge: 10000 // How long previous location will be cached
+          //       }
+          //     )
+          //   );
+          // };
+          
 export default function App() {
-  return (
+            
+  const [location, setLocation] = useState(
+    {
+        latitude: -22.9, 
+        longitude: -43.2, 
+        latitudeDelta: 0.0922, 
+        longitudeDelta: 0.0421
+    }
+);
+  const [locationError, setLocationError] = useState(null);
+
+  const [pathTile,setPathTile] = useState(null)
+  const getLocation = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        setLocationError("Location permission denied");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    } catch (error) {
+      console.error("Error requesting location permission:", error);
+    }
+  };
+
+  useEffect(() => {
+    getLocation();
+  }, []);
+
+  console.log(location);
+
+  const { latitude, longitude } = location?.coords || {};
+
+  // return map on current location
+  return(
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+      <MapView
+        style={{width: "100%", height: "80%"}}
+        followsUserLocation={true}
+        showsUserLocation={true}
+        initialRegion={{
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}
+      >
+        <UrlTile urlTemplate={'http://172.15.6.112:5000/{z}/{x}/{y}.png'} shouldReplaceMapContent={false}/>
+        <Marker
+          coordinate={{latitude: latitude, longitude: longitude}}
+          title={'My Marker'}
+          description={'This is my marker'}
+        />
+      </MapView>
+      {/* <Button
+        onPress={async ()=>{
+          local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
+          // uri = await local.GetLocalFile()
+          // setPathTile("file://"+uri+"/output/{z}/{x}/{y}.png")
+          // console.log(pathTile)
+          } }
+        title="Download Map"
+        color="#fff"
+        accessibilityLabel="Take Url From"
+      /> */}
     </View>
   );
 }
@@ -13,7 +116,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'green',
+    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
   },
