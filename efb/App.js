@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, Button, Platform, TouchableOpacity } from 'reac
 import React, { useEffect, useState } from 'react';
 import * as Location from "expo-location";
 // // react native maps
-import MapView, { UrlTile } from 'react-native-maps';
+import MapView, { UrlTile, Geojson} from 'react-native-maps';
 import { LocalTile, Marker, Polyline, Polygon } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/FontAwesome'
 
@@ -13,6 +13,59 @@ import * as local from './LocalFiles';
 const latitude = 37.78825;
 const longitude = -122.4324;
 
+// const getDeviceCurrentLocation = async () => {
+  //   return new Promise((resolve, reject) =>
+  //     GeoLocation.getCurrentPosition(
+    //       (position) => {
+      //         resolve(position);
+      //       },
+      //       (error) => {
+        //         reject(error);
+        //       },
+        //       {
+          //         enableHighAccuracy: true, // Whether to use high accuracy mode or not
+          //         timeout: 15000, // Request timeout
+          //         maximumAge: 10000 // How long previous location will be cached
+          //       }
+          //     )
+          //   );
+          // };
+          
+         const myPlace =  { "type": "FeatureCollection",
+            "features" : [
+              { "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [-22.9, -43.2]},
+                "properties": {"prop0": "value0"}
+                },
+              { "type": "Feature",
+                "geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [-22.9, -43.2], [-21.9, -42.2], [-21.9, -43.2], [-22.9, -42.2]
+                    ]
+                  },
+                "properties": {
+                  "prop0": "value0",
+                  "prop1": 0.0
+                  }
+                },
+              { "type": "Feature",
+                 "geometry": {
+                   "type": "Polygon",
+                   "coordinates": [
+                     [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+                       [100.0, 1.0], [100.0, 0.0] ]
+                     ]
+          
+                 },
+                 "properties": {
+                   "prop0": "value0",
+                   "prop1": {"this": "that"}
+                   }
+                 }
+              ]
+            }
+          
 export default function App() {
 
   const [isDrawing, setIsDrawing] = useState(false);
@@ -126,6 +179,17 @@ export default function App() {
           <Polyline key={index} coordinates={polyline} strokeColor="red" strokeWidth={2} />
         ))}
         {polyline.length > 1 && <Polyline coordinates={polyline} strokeColor="red" strokeWidth={2} />}
+        <Marker
+          coordinate={{latitude: latitude, longitude: longitude}}
+          title={'My Marker'}
+          description={'This is my marker'}
+        />
+        <Geojson
+        geojson={myPlace}
+        strokeColor="red"
+        fillColor="green"
+        strokeWidth={2}
+      />
       </MapView>
       <TouchableOpacity
         onPress={() => {
