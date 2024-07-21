@@ -254,8 +254,6 @@ export default function App() {
             file = await local.GetLocalFile();
             
             setGeoJson(JSON.parse(file))
-            console.log("depois")
-            console.log(geoJson)
 
           }
           catch(erro){
@@ -275,8 +273,8 @@ export default function App() {
       <Button
         onPress={async ()=>{
             const jsonData = JSON.stringify(geoJson)
-            console.log(jsonData)
-            await local.downloadKML(jsonData,text+".kml")
+            fileUri = await local.downloadKML(jsonData,text+".kml")
+            await local.shareFile(fileUri)
           } }
         title="Export KML"
         color="#fff"
