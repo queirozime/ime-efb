@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Button, Platform, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Button, Platform, TouchableOpacity, TextInput } from 'react-native';
 // use effect
 import React, { useEffect, useState } from 'react';
 import * as Location from "expo-location";
@@ -137,6 +137,21 @@ export default function App() {
 
   const { latitude, longitude } = location?.coords || {};
 
+
+  const [text, setText] = useState("titulo");
+
+  // const [kmlURI, setkmlURI] = useState(null);
+
+
+  const [geoJson,setGeoJson] =  useState ({ "type": "FeatureCollection",
+    "features" : [
+      
+      ]
+    })
+
+  useEffect(() => {
+    getLocation();
+  }, []);
   // return map on current location
   return(
     <View style={styles.container}>
@@ -185,7 +200,7 @@ export default function App() {
           description={'This is my marker'}
         />
         <Geojson
-        geojson={myPlace}
+        geojson={geoJson}
         strokeColor="red"
         fillColor="green"
         strokeWidth={2}
@@ -232,6 +247,41 @@ export default function App() {
       >
         <Text style={{color: "#fff"}}>R</Text>
       </TouchableOpacity>
+      <Button
+        onPress={async ()=>{
+          // local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
+          try{
+            file = await local.GetLocalFile();
+            
+            setGeoJson(JSON.parse(file))
+            console.log("depois")
+            console.log(geoJson)
+
+          }
+          catch(erro){
+            console.log("err: "+erro)
+          }
+          
+          
+          // Converter o conteúdo XML para objeto JavaScript
+          // const parsedKml = await parseStringPromise(kmlContent);
+          // setPathTile("file://"+uri+"/output/{z}/{x}/{y}.png")
+          // console.log(pathTile)
+          } }
+        title="Import KML"
+        color="#fff"
+        accessibilityLabel="Take Url From"
+      />
+      <Button
+        onPress={async ()=>{
+            const jsonData = JSON.stringify(geoJson)
+            console.log(jsonData)
+            await local.downloadKML(jsonData,text+".kml")
+          } }
+        title="Export KML"
+        color="#fff"
+        accessibilityLabel="Take Url From"
+      />
     </View>
   );
 }

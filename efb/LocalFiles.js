@@ -1,14 +1,13 @@
 import * as DocumentPickerExpo from 'expo-document-picker';
-// import DocumentPicker from 'react-native-document-picker';
 
 import  * as FileSystem from 'expo-file-system';
+
+import * as Sharing from 'expo-sharing';
 
 async function getFilePath() {
     try {
         const document = await DocumentPickerExpo.getDocumentAsync({
         });
-        console.log(document.assets["uri"])
-        console.log(document.assets[0].uri)
 
         fileUri = document.assets[0].uri
         return fileUri
@@ -137,10 +136,25 @@ export async function downloadFolder(uriDownload,title){
   
 }
 
+
+export async function downloadKML(data,title){
+
+
+  const path = FileSystem.documentDirectory
+  console.log("path:") 
+  console.log(path)
+  const fileUri  = path+title
+  await FileSystem.writeAsStringAsync(fileUri, data);
+  console.log(path+title)
+  await Sharing.shareAsync(fileUri);
+}
+
+
 export async function GetLocalFile() {
-  console.log('Get file');
   fileUri = await getFilePath()
-  return fileUri
+  const kmlContent = await FileSystem.readAsStringAsync(fileUri);
+  console.log(kmlContent)
+  return kmlContent
 }
 
 export async function GetLocalFolder(){
