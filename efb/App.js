@@ -1,9 +1,9 @@
-import { StyleSheet, Text, View, Button, Platform, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Button, Platform, TouchableOpacity, TextInput } from 'react-native';
 // use effect
 import React, { useEffect, useState } from 'react';
 import * as Location from "expo-location";
 // // react native maps
-import MapView, { UrlTile } from 'react-native-maps';
+import MapView, { UrlTile, Geojson} from 'react-native-maps';
 import { LocalTile, Marker, Polyline, Polygon } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/FontAwesome'
 
@@ -12,7 +12,106 @@ import * as local from './LocalFiles';
 // // latitude and longitude
 const latitude = 37.78825;
 const longitude = -122.4324;
+// polygon coordinates
+const polygon = [
+  { latitude: 37.8025259, longitude: -122.4351431 },
+  { latitude: 37.7896386, longitude: -122.421646 },
+  { latitude: 37.7665248, longitude: -122.4161628 },
+  { latitude: 37.7734153, longitude: -122.4577787 },
+  { latitude: 37.7948605, longitude: -122.4596065 },
+];
 
+
+const myGeoJson = { "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+      "properties": {"prop0": "value0"}
+      },
+    { "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
+          ]
+        },
+      "properties": {
+        "prop0": "value0",
+        "prop1": 0.0
+        }
+      },
+    { "type": "Feature",
+       "geometry": {
+         "type": "Polygon",
+         "coordinates": [
+           [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+             [100.0, 1.0], [100.0, 0.0] ]
+           ]
+
+       },
+       "properties": {
+         "prop0": "value0",
+         "prop1": {"this": "that"}
+         }
+       }
+    ]
+  }
+
+// polyline coordinates
+
+// const getDeviceCurrentLocation = async () => {
+  //   return new Promise((resolve, reject) =>
+  //     GeoLocation.getCurrentPosition(
+    //       (position) => {
+      //         resolve(position);
+      //       },
+      //       (error) => {
+        //         reject(error);
+        //       },
+        //       {
+          //         enableHighAccuracy: true, // Whether to use high accuracy mode or not
+          //         timeout: 15000, // Request timeout
+          //         maximumAge: 10000 // How long previous location will be cached
+          //       }
+          //     )
+          //   );
+          // };
+          
+         const myPlace =  { "type": "FeatureCollection",
+            "features" : [
+              { "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [-22.9, -43.2]},
+                "properties": {"prop0": "value0"}
+                },
+              { "type": "Feature",
+                "geometry": {
+                  "type": "LineString",
+                  "coordinates": [
+                    [-22.9, -43.2], [-21.9, -42.2], [-21.9, -43.2], [-22.9, -42.2]
+                    ]
+                  },
+                "properties": {
+                  "prop0": "value0",
+                  "prop1": 0.0
+                  }
+                },
+              { "type": "Feature",
+                 "geometry": {
+                   "type": "Polygon",
+                   "coordinates": [
+                     [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+                       [100.0, 1.0], [100.0, 0.0] ]
+                     ]
+          
+                 },
+                 "properties": {
+                   "prop0": "value0",
+                   "prop1": {"this": "that"}
+                   }
+                 }
+              ]
+            }
+          
 export default function App() {
 
   const [isDrawing, setIsDrawing] = useState(false);
@@ -84,6 +183,21 @@ export default function App() {
 
   const { latitude, longitude } = location?.coords || {};
 
+
+  const [text, setText] = useState("titulo");
+
+  // const [kmlURI, setkmlURI] = useState(null);
+
+
+  const [geoJson,setGeoJson] =  useState ({ "type": "FeatureCollection",
+    "features" : [
+      
+      ]
+    })
+
+  useEffect(() => {
+    getLocation();
+  }, []);
   // return map on current location
   return(
     <View style={styles.container}>
@@ -126,6 +240,20 @@ export default function App() {
           <Polyline key={index} coordinates={polyline} strokeColor="red" strokeWidth={2} />
         ))}
         {polyline.length > 1 && <Polyline coordinates={polyline} strokeColor="red" strokeWidth={2} />}
+        <Marker
+          coordinate={{latitude: latitude, longitude: longitude}}
+          title={'My Marker'}
+          description={'This is my marker'}
+        />
+
+      <Geojson
+        geojson={geoJson}
+        tracksViewChanges = {true}
+      />
+       <Geojson
+        geojson={myGeoJson}
+        tracksViewChanges = {true}
+      />
       </MapView>
       <TouchableOpacity
         onPress={() => {
@@ -168,6 +296,39 @@ export default function App() {
       >
         <Text style={{color: "#fff"}}>R</Text>
       </TouchableOpacity>
+      <Button
+        onPress={async ()=>{
+          // local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
+          try{
+            file = await local.GetLocalFile();
+            
+            setGeoJson(JSON.parse(file))
+
+          }
+          catch(erro){
+            console.log("err: "+erro)
+          }
+          
+          
+          // Converter o conteúdo XML para objeto JavaScript
+          // const parsedKml = await parseStringPromise(kmlContent);
+          // setPathTile("file://"+uri+"/output/{z}/{x}/{y}.png")
+          // console.log(pathTile)
+          } }
+        title="Import KML"
+        color="#fff"
+        accessibilityLabel="Take Url From"
+      />
+      <Button
+        onPress={async ()=>{
+            const jsonData = JSON.stringify(geoJson)
+            fileUri = await local.downloadKML(jsonData,text+".kml")
+            await local.shareFile(fileUri)
+          } }
+        title="Export KML"
+        color="#fff"
+        accessibilityLabel="Take Url From"
+      />
     </View>
   );
 }
