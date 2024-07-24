@@ -12,6 +12,52 @@ import * as local from './LocalFiles';
 // // latitude and longitude
 const latitude = 37.78825;
 const longitude = -122.4324;
+// polygon coordinates
+const polygon = [
+  { latitude: 37.8025259, longitude: -122.4351431 },
+  { latitude: 37.7896386, longitude: -122.421646 },
+  { latitude: 37.7665248, longitude: -122.4161628 },
+  { latitude: 37.7734153, longitude: -122.4577787 },
+  { latitude: 37.7948605, longitude: -122.4596065 },
+];
+
+
+const myGeoJson = { "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+      "properties": {"prop0": "value0"}
+      },
+    { "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
+          ]
+        },
+      "properties": {
+        "prop0": "value0",
+        "prop1": 0.0
+        }
+      },
+    { "type": "Feature",
+       "geometry": {
+         "type": "Polygon",
+         "coordinates": [
+           [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+             [100.0, 1.0], [100.0, 0.0] ]
+           ]
+
+       },
+       "properties": {
+         "prop0": "value0",
+         "prop1": {"this": "that"}
+         }
+       }
+    ]
+  }
+
+// polyline coordinates
 
 // const getDeviceCurrentLocation = async () => {
   //   return new Promise((resolve, reject) =>
@@ -199,11 +245,14 @@ export default function App() {
           title={'My Marker'}
           description={'This is my marker'}
         />
-        <Geojson
+
+      <Geojson
         geojson={geoJson}
-        strokeColor="red"
-        fillColor="green"
-        strokeWidth={2}
+        tracksViewChanges = {true}
+      />
+       <Geojson
+        geojson={myGeoJson}
+        tracksViewChanges = {true}
       />
       </MapView>
       <TouchableOpacity

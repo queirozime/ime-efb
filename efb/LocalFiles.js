@@ -59,7 +59,7 @@ async function createFolder(path){
   }
 }
 
-async function startDownaload(downloadResumable){
+async function startDownload(downloadResumable){
   try {
     const { uri } = await downloadResumable.downloadAsync();
     //criar um loading aqui para o cara n ficar clicando infinito
@@ -113,7 +113,7 @@ export async function downloadFolder(uriDownload,title){
   );
   
   await readDirectory(path)
-  await startDownaload(downloadResumable)
+  await startDownload(downloadResumable)
   await readDirectory(path)
   await readDirectory(path+title)
 
