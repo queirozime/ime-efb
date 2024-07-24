@@ -1,47 +1,31 @@
-import { StyleSheet, Text, View, Button, Platform } from 'react-native';
+import { StyleSheet, Text, View, Button, Platform, TouchableOpacity } from 'react-native';
 // use effect
 import React, { useEffect, useState } from 'react';
 import * as Location from "expo-location";
 // // react native maps
 import MapView, { UrlTile } from 'react-native-maps';
 import { LocalTile, Marker, Polyline, Polygon } from 'react-native-maps';
-
+import Icon from 'react-native-vector-icons/FontAwesome'
 
 import * as local from './LocalFiles';
 
 // // latitude and longitude
 const latitude = 37.78825;
 const longitude = -122.4324;
-// polygon coordinates
-const polygon = [
-  { latitude: 37.8025259, longitude: -122.4351431 },
-  { latitude: 37.7896386, longitude: -122.421646 },
-  { latitude: 37.7665248, longitude: -122.4161628 },
-  { latitude: 37.7734153, longitude: -122.4577787 },
-  { latitude: 37.7948605, longitude: -122.4596065 },
-];
-// polyline coordinates
 
-// const getDeviceCurrentLocation = async () => {
-  //   return new Promise((resolve, reject) =>
-  //     GeoLocation.getCurrentPosition(
-    //       (position) => {
-      //         resolve(position);
-      //       },
-      //       (error) => {
-        //         reject(error);
-        //       },
-        //       {
-          //         enableHighAccuracy: true, // Whether to use high accuracy mode or not
-          //         timeout: 15000, // Request timeout
-          //         maximumAge: 10000 // How long previous location will be cached
-          //       }
-          //     )
-          //   );
-          // };
-          
 export default function App() {
-            
+
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [DrawingColor, setDrawingColor] = useState("black");
+  
+  const [polylines, setPolylines] = useState([]);
+  const [polyline, setPolyline] = useState([]);
+  const savePolyline = () => {
+    if(polyline.length > 1)
+      setPolylines([...polylines, polyline]);
+    setPolyline([]);
+  }
+  const [isFollowingUser, setIsFollowingUser] = useState(true);
   const [location, setLocation] = useState(
     {
         latitude: -22.9, 
@@ -49,10 +33,19 @@ export default function App() {
         latitudeDelta: 0.0922, 
         longitudeDelta: 0.0421
     }
-);
+  );
   const [locationError, setLocationError] = useState(null);
+  const [recordLocation, setRecordLocation] = useState(false);
+  const [locationFile, setLocationFile] = useState(null);
 
-  const [pathTile,setPathTile] = useState(null)
+  const startRecording = () => {
+    // also tag current timestamp
+    console.log( new Date().toISOString() );
+    timestamp = new Date().toISOString();
+    setLocationFile(timestamp);
+  }
+
+  const [pathTile, setPathTile] = useState(null)
   const getLocation = async () => {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -69,11 +62,25 @@ export default function App() {
     }
   };
 
+  const logLocation = async () => {
+    getLocation();
+    console.log("Record location:", recordLocation);
+    console.log("Location:", location);
+    local.saveLocation(location, locationFile);
+  }
+
   useEffect(() => {
     getLocation();
-  }, []);
+    const locationInterval = setInterval(() => {
+      console.log("Record location:", recordLocation);
+      if(recordLocation)
+        logLocation();
+    }, 1000);
 
-  console.log(location);
+    return () => {
+      clearInterval(locationInterval);
+    }
+  }, [recordLocation]);
 
   const { latitude, longitude } = location?.coords || {};
 
@@ -81,8 +88,8 @@ export default function App() {
   return(
     <View style={styles.container}>
       <MapView
-        style={{width: "100%", height: "80%"}}
-        followsUserLocation={true}
+        style={{width: "100%", height: "100%"}}
+        followsUserLocation={isFollowingUser}
         showsUserLocation={true}
         initialRegion={{
           latitude: latitude,
@@ -90,25 +97,77 @@ export default function App() {
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         }}
+        scrollEnabled={!isDrawing}
+        ref = {map => {this.map = map}}
+        mapType="normal"
+        onTouchMove={(e) => {
+          if (isDrawing) {
+            const { locationX, locationY } = e.nativeEvent;
+            this.map.coordinateForPoint({ x: locationX, y: locationY })
+              .then(coords => {
+                var latitude = coords.latitude;
+                var longitude = coords.longitude;
+                setPolyline([...polyline, { latitude, longitude }]);
+              })
+              .catch(error => {
+                console.error("Error getting coordinates:", error);
+              });
+          }
+        }}
+        onTouchEnd={(e) => {
+          savePolyline();
+        }}
+        onRegionChange={(region) => {
+          setIsFollowingUser(false);
+        }}
       >
         <UrlTile urlTemplate={'http://172.15.6.112:5000/{z}/{x}/{y}.png'} shouldReplaceMapContent={false}/>
-        <Marker
-          coordinate={{latitude: latitude, longitude: longitude}}
-          title={'My Marker'}
-          description={'This is my marker'}
-        />
+        {polylines.map((polyline, index) => (
+          <Polyline key={index} coordinates={polyline} strokeColor="red" strokeWidth={2} />
+        ))}
+        {polyline.length > 1 && <Polyline coordinates={polyline} strokeColor="red" strokeWidth={2} />}
       </MapView>
-      {/* <Button
-        onPress={async ()=>{
-          local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
-          // uri = await local.GetLocalFile()
-          // setPathTile("file://"+uri+"/output/{z}/{x}/{y}.png")
-          // console.log(pathTile)
-          } }
-        title="Download Map"
-        color="#fff"
-        accessibilityLabel="Take Url From"
-      /> */}
+      <TouchableOpacity
+        onPress={() => {
+          setIsDrawing(!isDrawing);
+        }}
+        onLongPress={() => {
+          console.log("Long press detected");
+          setIsDrawing(true);
+        }}
+        style={[
+          styles.circleButton,
+          styles.pencilButton,
+          { backgroundColor: isDrawing ? "rgba(74, 74, 74, 0.5)" : "rgba(255, 255, 255, 0.3)" }
+        ]}
+      >
+        <Icon name="pencil" size={30} color="#fff" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          setIsFollowingUser(true);
+        }}
+        style={[
+          styles.circleButton,
+          { bottom: 20, left: 20 }
+        ]}
+      >
+        <Icon name="location-arrow" size={30} color="#fff" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          console.log("Record location before toggle:", recordLocation);
+          if(!recordLocation)
+            startRecording();
+          setRecordLocation(!recordLocation);
+        }}
+        style={[
+          styles.circleButton,
+          { bottom: 20, left: 100 }
+        ]}
+      >
+        <Text style={{color: "#fff"}}>R</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -120,4 +179,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  circleButton: {
+    position: 'absolute',
+    width: 60, 
+    height: 60, // same as height 
+    borderRadius: 30, // Half of the width/height
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  pencilButton: {
+    bottom: 20,
+    right: 20,
+  }
 });

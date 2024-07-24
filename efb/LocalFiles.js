@@ -17,6 +17,27 @@ async function getFilePath() {
       }
 }
 
+export async function saveLocation(location, timestamp) {
+  try {
+      console.log('Saving location:', location);
+      var path = FileSystem.documentDirectory + '/flights/';
+      path += timestamp + ".txt";
+      console.log("writing to file:", path);
+  } catch (error) {
+      console.error(error);
+  }
+}
+
+export async function readLocationFile() {
+  try {
+      // get list of entries in FileSystem.documentDirectory/flights
+      const content = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + '/flights/');
+      console.log(content);
+  } catch (error) {
+      console.error(error);
+  }
+}
+
 // async function getDirectoryPath() {
 //     try {
 //       const result = await DocumentPicker.pickMultiple({
