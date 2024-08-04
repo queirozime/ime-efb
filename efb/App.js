@@ -1,8 +1,8 @@
 import { StyleSheet, Text, View, Button, Platform, TouchableOpacity, TextInput } from 'react-native';
-// use effect
 import React, { useEffect, useState } from 'react';
 import * as Location from "expo-location";
-// // react native maps
+import Modal from 'react-native-modal';
+
 import MapView, { UrlTile, Geojson} from 'react-native-maps';
 import { LocalTile, Marker, Polyline, Polygon } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/FontAwesome'
@@ -22,13 +22,15 @@ const polygon = [
 ];
 
 
-const myGeoJson = { "type": "FeatureCollection",
+const myGeoJson = { 
+  "type": "FeatureCollection",
   "features": [
     { "type": "Feature",
       "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
       "properties": {"prop0": "value0"}
-      },
-    { "type": "Feature",
+    },
+    { 
+      "type": "Feature",
       "geometry": {
         "type": "LineString",
         "coordinates": [
@@ -39,78 +41,23 @@ const myGeoJson = { "type": "FeatureCollection",
         "prop0": "value0",
         "prop1": 0.0
         }
-      },
-    { "type": "Feature",
+    },
+    { 
+      "type": "Feature",
        "geometry": {
          "type": "Polygon",
          "coordinates": [
            [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
              [100.0, 1.0], [100.0, 0.0] ]
            ]
-
-       },
+         },
        "properties": {
          "prop0": "value0",
          "prop1": {"this": "that"}
-         }
-       }
-    ]
-  }
-
-// polyline coordinates
-
-// const getDeviceCurrentLocation = async () => {
-  //   return new Promise((resolve, reject) =>
-  //     GeoLocation.getCurrentPosition(
-    //       (position) => {
-      //         resolve(position);
-      //       },
-      //       (error) => {
-        //         reject(error);
-        //       },
-        //       {
-          //         enableHighAccuracy: true, // Whether to use high accuracy mode or not
-          //         timeout: 15000, // Request timeout
-          //         maximumAge: 10000 // How long previous location will be cached
-          //       }
-          //     )
-          //   );
-          // };
-          
-         const myPlace =  { "type": "FeatureCollection",
-            "features" : [
-              { "type": "Feature",
-                "geometry": {"type": "Point", "coordinates": [-22.9, -43.2]},
-                "properties": {"prop0": "value0"}
-                },
-              { "type": "Feature",
-                "geometry": {
-                  "type": "LineString",
-                  "coordinates": [
-                    [-22.9, -43.2], [-21.9, -42.2], [-21.9, -43.2], [-22.9, -42.2]
-                    ]
-                  },
-                "properties": {
-                  "prop0": "value0",
-                  "prop1": 0.0
-                  }
-                },
-              { "type": "Feature",
-                 "geometry": {
-                   "type": "Polygon",
-                   "coordinates": [
-                     [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
-                       [100.0, 1.0], [100.0, 0.0] ]
-                     ]
-          
-                 },
-                 "properties": {
-                   "prop0": "value0",
-                   "prop1": {"this": "that"}
-                   }
-                 }
-              ]
-            }
+        }
+    }
+  ]
+}
           
 export default function App() {
 
@@ -136,6 +83,12 @@ export default function App() {
   const [locationError, setLocationError] = useState(null);
   const [recordLocation, setRecordLocation] = useState(false);
   const [locationFile, setLocationFile] = useState(null);
+
+  const [isModalVisible, setModalVisible] = useState(false);
+
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
 
   const startRecording = () => {
     // also tag current timestamp
@@ -235,7 +188,7 @@ export default function App() {
           setIsFollowingUser(false);
         }}
       >
-        <UrlTile urlTemplate={'http://172.15.6.112:5000/{z}/{x}/{y}.png'} shouldReplaceMapContent={false}/>
+        <UrlTile urlTemplate={'http://172.15.0.66:5000/{z}/{x}/{y}.png'} shouldReplaceMapContent={false}/>
         {polylines.map((polyline, index) => (
           <Polyline key={index} coordinates={polyline} strokeColor="red" strokeWidth={2} />
         ))}
@@ -296,7 +249,51 @@ export default function App() {
       >
         <Text style={{color: "#fff"}}>R</Text>
       </TouchableOpacity>
-      <Button
+      <TouchableOpacity
+        onPress={toggleModal}
+        style={[
+          styles.circleButton,
+          { bottom: 20, left: 180 }
+        ]}
+      >
+        <Icon name='folder' size={30} color="#fff" />
+        <Modal
+        isVisible={isModalVisible}
+        onBackdropPress={toggleModal}
+        style={styles.modal}
+        >
+        <View style={styles.modalContent}>
+          <TouchableOpacity 
+            style={styles.option}  
+            onPress={async ()=>{
+              // local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
+              try{
+                file = await local.GetLocalFile();
+                
+                setGeoJson(JSON.parse(file))
+    
+              }
+              catch(erro){
+                console.log("err: "+erro)
+              }
+            }}
+          >
+            <Text style={styles.optionText}>Import KML</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.option} 
+            onPress={async ()=>{
+              const jsonData = JSON.stringify(geoJson)
+              fileUri = await local.downloadKML(jsonData,text+".kml")
+              await local.shareFile(fileUri)
+            }}
+          >
+            <Text style={styles.optionText}>Export KML</Text>
+          </TouchableOpacity>
+        </View>
+        </Modal>
+      </TouchableOpacity>
+      {/* <Button
         onPress={async ()=>{
           // local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
           try{
@@ -308,12 +305,6 @@ export default function App() {
           catch(erro){
             console.log("err: "+erro)
           }
-          
-          
-          // Converter o conteúdo XML para objeto JavaScript
-          // const parsedKml = await parseStringPromise(kmlContent);
-          // setPathTile("file://"+uri+"/output/{z}/{x}/{y}.png")
-          // console.log(pathTile)
           } }
         title="Import KML"
         color="#fff"
@@ -328,7 +319,7 @@ export default function App() {
         title="Export KML"
         color="#fff"
         accessibilityLabel="Take Url From"
-      />
+      /> */}
     </View>
   );
 }
@@ -353,5 +344,26 @@ const styles = StyleSheet.create({
   pencilButton: {
     bottom: 20,
     right: 20,
-  }
+  },
+  modal: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 0, // This is the style you need to add
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+    alignItems: 'center',
+  },
+  option: {
+    padding: 10,
+    marginVertical: 5,
+    width: '100%',
+    alignItems: 'center',
+  },
+  optionText: {
+    fontSize: 18,
+  },
 });

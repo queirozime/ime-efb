@@ -7,7 +7,7 @@ from io import BytesIO
 
 app = Flask(__name__)
 
-@app.route('local/<path:file_path>', methods=['GET'])
+@app.route('/local/<path:file_path>', methods=['GET'])
 def download_file(file_path):
     full_path = os.path.join('public', file_path)
     
