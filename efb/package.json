@@ -27,7 +27,9 @@
     "react-native-geolocation-service": "^5.3.1",
     "react-native-maps": "^1.14.0",
     "react-native-modal": "^13.0.1",
-    "react-native-web": "~0.19.6"
+    "react-native-uuid": "^2.0.2",
+    "react-native-web": "~0.19.6",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
