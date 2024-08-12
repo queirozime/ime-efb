@@ -3,9 +3,10 @@ import React, { useEffect, useState } from 'react';
 import * as Location from "expo-location";
 import Modal from 'react-native-modal';
 
-import MapView, { UrlTile, Geojson} from 'react-native-maps';
+import MapView, { UrlTile, Geojson } from 'react-native-maps';
 import { LocalTile, Marker, Polyline, Polygon } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/FontAwesome'
+import * as FileSystem from 'expo-file-system';
 
 import * as local from './LocalFiles';
 
@@ -22,62 +23,63 @@ const polygon = [
 ];
 
 
-const myGeoJson = { 
+const myGeoJson = {
   "type": "FeatureCollection",
   "features": [
-    { "type": "Feature",
-      "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
-      "properties": {"prop0": "value0"}
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [102.0, 0.5] },
+      "properties": { "prop0": "value0" }
     },
-    { 
+    {
       "type": "Feature",
       "geometry": {
         "type": "LineString",
         "coordinates": [
           [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
-          ]
-        },
+        ]
+      },
       "properties": {
         "prop0": "value0",
         "prop1": 0.0
-        }
+      }
     },
-    { 
+    {
       "type": "Feature",
-       "geometry": {
-         "type": "Polygon",
-         "coordinates": [
-           [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
-             [100.0, 1.0], [100.0, 0.0] ]
-           ]
-         },
-       "properties": {
-         "prop0": "value0",
-         "prop1": {"this": "that"}
-        }
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+          [100.0, 1.0], [100.0, 0.0]]
+        ]
+      },
+      "properties": {
+        "prop0": "value0",
+        "prop1": { "this": "that" }
+      }
     }
   ]
 }
-          
+
 export default function App() {
 
   const [isDrawing, setIsDrawing] = useState(false);
   const [DrawingColor, setDrawingColor] = useState("black");
-  
+
   const [polylines, setPolylines] = useState([]);
   const [polyline, setPolyline] = useState([]);
   const savePolyline = () => {
-    if(polyline.length > 1)
+    if (polyline.length > 1)
       setPolylines([...polylines, polyline]);
     setPolyline([]);
   }
   const [isFollowingUser, setIsFollowingUser] = useState(true);
   const [location, setLocation] = useState(
     {
-        latitude: -22.9, 
-        longitude: -43.2, 
-        latitudeDelta: 0.0922, 
-        longitudeDelta: 0.0421
+      latitude: -22.9,
+      longitude: -43.2,
+      latitudeDelta: 0.0922,
+      longitudeDelta: 0.0421
     }
   );
   const [locationError, setLocationError] = useState(null);
@@ -92,7 +94,7 @@ export default function App() {
 
   const startRecording = () => {
     // also tag current timestamp
-    console.log( new Date().toISOString() );
+    console.log(new Date().toISOString());
     timestamp = new Date().toISOString();
     setLocationFile(timestamp);
   }
@@ -115,17 +117,20 @@ export default function App() {
   };
 
   const logLocation = async () => {
-    getLocation();
-    console.log("Record location:", recordLocation);
-    console.log("Location:", location);
-    local.saveLocation(location, locationFile);
+    console.log("Logging location");
+    //getLocation();
+    // DESCOMENTAR LINHA ABAIXO PARA SALVAR EM ARQUIVO
+    //await FileSystem.writeAsStringAsync(FileSystem.documentDirectory + "locations", JSON.stringify(location));
+    console.log("Location saved to file");
+    const locationContent = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + "locations");
+    console.log("Location content:", locationContent);
   }
 
   useEffect(() => {
     getLocation();
     const locationInterval = setInterval(() => {
       console.log("Record location:", recordLocation);
-      if(recordLocation)
+      if (recordLocation)
         logLocation();
     }, 1000);
 
@@ -142,20 +147,21 @@ export default function App() {
   // const [kmlURI, setkmlURI] = useState(null);
 
 
-  const [geoJson,setGeoJson] =  useState ({ "type": "FeatureCollection",
-    "features" : [
-      
-      ]
-    })
+  const [geoJson, setGeoJson] = useState({
+    "type": "FeatureCollection",
+    "features": [
+
+    ]
+  })
 
   useEffect(() => {
     getLocation();
   }, []);
   // return map on current location
-  return(
+  return (
     <View style={styles.container}>
       <MapView
-        style={{width: "100%", height: "100%"}}
+        style={{ width: "100%", height: "100%" }}
         followsUserLocation={isFollowingUser}
         showsUserLocation={true}
         initialRegion={{
@@ -165,7 +171,7 @@ export default function App() {
           longitudeDelta: 0.0421,
         }}
         scrollEnabled={!isDrawing}
-        ref = {map => {this.map = map}}
+        ref={map => { this.map = map }}
         mapType="normal"
         onTouchMove={(e) => {
           if (isDrawing) {
@@ -188,25 +194,25 @@ export default function App() {
           setIsFollowingUser(false);
         }}
       >
-        <UrlTile urlTemplate={'http://172.15.0.66:5000/{z}/{x}/{y}.png'} shouldReplaceMapContent={false}/>
+        <UrlTile urlTemplate={'http://172.15.0.66:5000/{z}/{x}/{y}.png'} shouldReplaceMapContent={false} />
         {polylines.map((polyline, index) => (
           <Polyline key={index} coordinates={polyline} strokeColor="red" strokeWidth={2} />
         ))}
         {polyline.length > 1 && <Polyline coordinates={polyline} strokeColor="red" strokeWidth={2} />}
         <Marker
-          coordinate={{latitude: latitude, longitude: longitude}}
+          coordinate={{ latitude: latitude, longitude: longitude }}
           title={'My Marker'}
           description={'This is my marker'}
         />
 
-      <Geojson
-        geojson={geoJson}
-        tracksViewChanges = {true}
-      />
-       <Geojson
-        geojson={myGeoJson}
-        tracksViewChanges = {true}
-      />
+        <Geojson
+          geojson={geoJson}
+          tracksViewChanges={true}
+        />
+        <Geojson
+          geojson={myGeoJson}
+          tracksViewChanges={true}
+        />
       </MapView>
       <TouchableOpacity
         onPress={() => {
@@ -236,18 +242,19 @@ export default function App() {
         <Icon name="location-arrow" size={30} color="#fff" />
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => {
-          console.log("Record location before toggle:", recordLocation);
-          if(!recordLocation)
-            startRecording();
-          setRecordLocation(!recordLocation);
+        onPress={async () => {
+          // console.log("Record location before toggle:", recordLocation);
+          // if (!recordLocation)
+          //   startRecording();
+          // setRecordLocation(!recordLocation);
+          await logLocation();
         }}
         style={[
           styles.circleButton,
           { bottom: 20, left: 100 }
         ]}
       >
-        <Text style={{color: "#fff"}}>R</Text>
+        <Text style={{ color: "#fff" }}>R</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={toggleModal}
@@ -258,39 +265,39 @@ export default function App() {
       >
         <Icon name='folder' size={30} color="#fff" />
         <Modal
-        isVisible={isModalVisible}
-        onBackdropPress={toggleModal}
-        style={styles.modal}
+          isVisible={isModalVisible}
+          onBackdropPress={toggleModal}
+          style={styles.modal}
         >
-        <View style={styles.modalContent}>
-          <TouchableOpacity 
-            style={styles.option}  
-            onPress={async ()=>{
-              // local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
-              try{
-                file = await local.GetLocalFile();
-                
-                setGeoJson(JSON.parse(file))
-    
-              }
-              catch(erro){
-                console.log("err: "+erro)
-              }
-            }}
-          >
-            <Text style={styles.optionText}>Import KML</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.option} 
-            onPress={async ()=>{
-              const jsonData = JSON.stringify(geoJson)
-              fileUri = await local.downloadKML(jsonData,text+".kml")
-              await local.shareFile(fileUri)
-            }}
-          >
-            <Text style={styles.optionText}>Export KML</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.modalContent}>
+            <TouchableOpacity
+              style={styles.option}
+              onPress={async () => {
+                // local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
+                try {
+                  file = await local.GetLocalFile();
+
+                  setGeoJson(JSON.parse(file))
+
+                }
+                catch (erro) {
+                  console.log("err: " + erro)
+                }
+              }}
+            >
+              <Text style={styles.optionText}>Import KML</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.option}
+              onPress={async () => {
+                const jsonData = JSON.stringify(geoJson)
+                fileUri = await local.downloadKML(jsonData, text + ".kml")
+                await local.shareFile(fileUri)
+              }}
+            >
+              <Text style={styles.optionText}>Export KML</Text>
+            </TouchableOpacity>
+          </View>
         </Modal>
       </TouchableOpacity>
       {/* <Button
@@ -333,7 +340,7 @@ const styles = StyleSheet.create({
   },
   circleButton: {
     position: 'absolute',
-    width: 60, 
+    width: 60,
     height: 60, // same as height 
     borderRadius: 30, // Half of the width/height
     justifyContent: 'center',
