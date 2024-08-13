@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Button, Platform, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Button, Platform, TouchableOpacity, TextInput, TouchableWithoutFeedback } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import * as Location from "expo-location";
 import Modal from 'react-native-modal';
@@ -9,6 +9,9 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 
 import * as local from './LocalFiles';
 import Map from './Map';
+import Sidebar from './Sidebar';
+import { Animated } from 'react-native';
+import { useRef } from 'react';
 
 // // latitude and longitude
 const latitude = 37.78825;
@@ -16,27 +19,69 @@ const longitude = -122.4324;
           
 export default function App() {
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [opacity] = useState(new Animated.Value(0));
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: sidebarOpen ? 0.5 : 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [sidebarOpen]);
+
+  const handleOutsidePress = () => {
+    setSidebarOpen(false);
+  };
+
+  const [layers, setLayers] = useState([]);
+
   return(
-    <View style={styles.container}>
-      <Map />
-    </View>
+    <TouchableWithoutFeedback onPressIn={handleOutsidePress}>
+      <View style={styles.container}>
+        <Animated.View style={[styles.overlay, {opacity}]}>
+          <View style={{position:'absolute', top:30, right: 20, zIndex: 500}}>
+            {!sidebarOpen && <TouchableOpacity
+              onPress={() => {
+                setSidebarOpen(!sidebarOpen);
+              }}
+            >
+              <Icon name="bars" size={30} color="#abc" />
+            </TouchableOpacity>}
+          </View>
+          <Map/>
+        </Animated.View>
+        <Sidebar open={sidebarOpen} layers={layers} setLayers={setLayers} />
+        </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    position: 'relative',
     flex: 1,
-    backgroundColor: 'red',
-    alignItems: 'center',
-    display: 'flex',
-    height: '100%',
-    width: '100%',
+    marginTop: '100px',
+    paddingBottom: '100px',
+    backgroundColor: 'black',
+    // alignItems: 'center',
+    // display: 'flex',
+    // height: '100%',
+    // width: '100%',
+    // position: ',
     // justifyContent: 'center',
   },
-  circleButton: {
+  overlay: {
     position: 'absolute',
-    width: 60, 
-    height: 60, // same as height 
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'black',
+    zIndex: 50,
+  },
+  circleButton: {
+    width: '100%', 
+    height: '100%', // same as height 
     borderRadius: 30, // Half of the width/height
     justifyContent: 'center',
     alignItems: 'center',

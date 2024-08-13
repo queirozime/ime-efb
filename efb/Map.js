@@ -1,5 +1,5 @@
 import React, { Component, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Touchable, TouchableOpacity } from 'react-native';
 import { Polyline } from 'react-native-maps';
 import { Button } from 'react-native';
 
@@ -10,7 +10,7 @@ import uuid from 'react-native-uuid';
 const { width, height } = Dimensions.get('window');
 
 
-export default function Map() {
+export default function Map(props) {
 
   const [isDrawing, setIsDrawing] = useState(false);
   const [DrawingColor, setDrawingColor] = useState("black");
@@ -20,18 +20,7 @@ export default function Map() {
   const [locationError, setLocationError] = useState(null);
   const [recordLocation, setRecordLocation] = useState(false);
   const [locationFile, setLocationFile] = useState(null);
-  const [isModalVisible, setModalVisible] = useState(false);
-  
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
 
-  const startRecording = () => {
-    // also tag current timestamp
-    console.log( new Date().toISOString() );
-    timestamp = new Date().toISOString();
-    setLocationFile(timestamp);
-  }
 
   const [pathTile, setPathTile] = useState(null)
 
@@ -48,12 +37,12 @@ export default function Map() {
     local.saveLocation(location, locationFile);
   }
 
-
   const handleTouchStart = async (e) => {
     const coordinate = await eventToCoordinate(e, this.map);
     setRefresh(!refresh);
     setAction("start");
     setEventCoord(coordinate);
+    console.log("Touch start:", coordinate);
   }
   
   const handleTouchMove = async (e) => {
@@ -78,9 +67,12 @@ export default function Map() {
 
   return (
     <View
-      style={{width: '100%', height: '100%'}}
+      style={{width: '100%', height: '100%', position: 'relative'}}
     >
-    <Button title="refresh" onPress={() => {setRefresh(!refresh)}} />
+    <TouchableOpacity style={{position:'absolute', top: 50, zIndex: 100}} onPress={() => {setRefresh(!refresh)}}>
+      <Text>aaaaaaaaaaaa</Text>
+    </TouchableOpacity>
+    <Button style={{position:'absolute'}}title="refresh" onPress={() => {setRefresh(!refresh)}} />
 
     <MapView
       style={{width: "100%", height: "100%"}}
@@ -90,7 +82,7 @@ export default function Map() {
       scrollEnabled={!isDrawing}
       ref = {map => {this.map = map}}
       mapType="normal"
-      onTouchStart={handleTouchStart}
+      onTouchStart={(e) => handleTouchStart(e)}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onRegionChange={() => {setIsFollowingUser(false)}}
@@ -99,7 +91,6 @@ export default function Map() {
       {layerList.map((layer, index) => (
         <Layer key={index} id={index} editId={editId} refresh={refresh} action={action} />
       ))}
-      <Button title="Add Layer" onPress={() => {setLayerList((prev) => [...prev, uuid.v4()]); setRefresh(!refresh); console.log(layerList)}} />
     </MapView>
     </View>
   );
