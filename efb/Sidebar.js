@@ -8,8 +8,6 @@ import { TouchableWithoutFeedback } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 import uuid from 'react-native-uuid';
 import { FlatList } from 'react-native';
-import { Alert } from 'react-native';
-import { TextInput } from 'react-native';
 import { Modal } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -79,31 +77,34 @@ export default function Sidebar(props) {
                 <FlatList
                     data={props.layers}
                     renderItem={renderLayer}
-                    keyExtractor={item => item.id.toString()}
+                    onBackButtonPress={toggleModal}
+                    // keyExtractor={item => item.id.toString()}
                 />
                 </View>
                 <Modal
-                    // animationType="slide"
-                    visible={modalVisible}
-                    onBackdropPress={toggleModal}
-                    // style={styles.modal}
+                  animationType="slide"
+                  transparent={true}
+                  visible={modalVisible}
+                  onRequestClose={() => { console.log("Modal has been closed.") }}
                 >
-                  <View style={styles.modalContent}>
-                    <View style={styles.modalaaaa}>
-                    <TouchableOpacity 
-                      style={styles.option}  
-                      onPress={toggleModal}
-                    >
-                      <Text style={styles.optionText}>Import KML</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={styles.option} 
-                      onPress={toggleModal}
-                    >
-                      <Text style={styles.optionText}>Export KML</Text>
-                    </TouchableOpacity>
-                  </View> 
+                  <TouchableOpacity 
+                    style={{flex: 1}}
+                    activeOpacity={1}
+                    onPress={toggleModal}
+                  >
+                  <View style={styles.modalContainer}>
+                      <TouchableWithoutFeedback
+                        style={styles.option}
+                        // onPress={toggleModal}
+                      >
+                        <View style={styles.modalContent}>
+                          <TouchableOpacity onPress={toggleModal}>
+                            <Text style={styles.optionText}>Import KML</Text>
+                          </TouchableOpacity>
+                    </View>
+                      </TouchableWithoutFeedback>
                   </View>
+                  </TouchableOpacity>
                 </Modal>
             </Animated.View>
         </TouchableWithoutFeedback>
@@ -120,41 +121,25 @@ const styles = {
         borderRadius: 5,
         margin: 5,
     },
-    modal: {
+    modalContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: 'transaprent',
-      margin: 0,
-      position: 'fixed',
-      // zIndex:
+      backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
     },
     modalContent: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 20,
-      borderRadius: 10,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 200,
-      // width: '80%',
-      // height: '80%',
-      // alignItems: 'center',
-    },
-    modalaaaa: {
-      backgroundColor: 'blue',
-      padding: 20,
-      borderRadius: 10,
       width: '80%',
+      padding: 20,
+      borderRadius: 10,
+      backgroundColor: 'blue', // Modal content background
       alignItems: 'center',
     },
     option: {
       padding: 10,
-      marginVertical: 5,
-      width: '100%',
-      alignItems: 'center',
+      backgroundColor: 'blue',
+      borderRadius: 5,
     },
     optionText: {
-      fontSize: 18,
+      color: 'white',
     },
 };

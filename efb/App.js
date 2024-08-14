@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: 'black',
-    zIndex: 50,
+    zIndex: 0,
   },
   circleButton: {
     width: '100%', 
