@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, Button, Platform, TouchableOpacity, TextInput } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import * as Location from "expo-location";
 import Modal from 'react-native-modal';
 
@@ -7,8 +7,9 @@ import MapView, { UrlTile, Geojson } from 'react-native-maps';
 import { LocalTile, Marker, Polyline, Polygon } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import * as FileSystem from 'expo-file-system';
+import { getLocalFile, shareFile, downloadKML } from './LocalFiles';
+import { buildGeoJsonFromCoordinates } from './utils';
 
-import * as local from './LocalFiles';
 
 // // latitude and longitude
 const latitude = 37.78825;
@@ -23,128 +24,105 @@ const polygon = [
 ];
 
 
-const myGeoJson = {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [102.0, 0.5] },
-      "properties": { "prop0": "value0" }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
-        ]
-      },
-      "properties": {
-        "prop0": "value0",
-        "prop1": 0.0
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
-          [100.0, 1.0], [100.0, 0.0]]
-        ]
-      },
-      "properties": {
-        "prop0": "value0",
-        "prop1": { "this": "that" }
-      }
-    }
-  ]
-}
-
 export default function App() {
 
   const [isDrawing, setIsDrawing] = useState(false);
   const [DrawingColor, setDrawingColor] = useState("black");
-
   const [polylines, setPolylines] = useState([]);
   const [polyline, setPolyline] = useState([]);
+  const intervalRef = useRef(null);
+
   const savePolyline = () => {
     if (polyline.length > 1)
       setPolylines([...polylines, polyline]);
     setPolyline([]);
   }
   const [isFollowingUser, setIsFollowingUser] = useState(true);
-  const [location, setLocation] = useState(
-    {
-      latitude: -22.9,
-      longitude: -43.2,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421
-    }
-  );
-  const [locationError, setLocationError] = useState(null);
-  const [recordLocation, setRecordLocation] = useState(false);
-  const [locationFile, setLocationFile] = useState(null);
+  const [recordedCoordinates, setRecordedCoordinates] = useState([]);
+  const [isRecording, setIsRecording] = useState(false);
 
   const [isModalVisible, setModalVisible] = useState(false);
+  const [hasSavedFile, setHasSavedFile] = useState(false);
+
+  const checkExistingFile = async () => {
+    const { exists } = await FileSystem.getInfoAsync(FileSystem.documentDirectory + "recordedPath");
+    setHasSavedFile(exists);
+  }
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
 
-  const startRecording = () => {
-    // also tag current timestamp
-    console.log(new Date().toISOString());
-    timestamp = new Date().toISOString();
-    setLocationFile(timestamp);
-  }
-
-  const [pathTile, setPathTile] = useState(null)
-  const getLocation = async () => {
+  const updateLocation = async () => {
+    console.log("Updating location...");
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
-        setLocationError("Location permission denied");
         return;
       }
 
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
+      const location = await Location.getCurrentPositionAsync({});
+      coordinates = [location.coords.longitude, location.coords.latitude];
+
+      setRecordedCoordinates((prevState) => [...prevState, coordinates]);
+
     } catch (error) {
       console.error("Error requesting location permission:", error);
     }
   };
 
-  const logLocation = async () => {
-    console.log("Logging location");
-    //getLocation();
-    // DESCOMENTAR LINHA ABAIXO PARA SALVAR EM ARQUIVO
-    //await FileSystem.writeAsStringAsync(FileSystem.documentDirectory + "locations", JSON.stringify(location));
-    console.log("Location saved to file");
-    const locationContent = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + "locations");
-    console.log("Location content:", locationContent);
-  }
+  // const logLocation = async () => {
+  //   await getLocation();
+  //   const directories = await FileSystem.readDirectoryAsync(FileSystem.documentDirectory);
+  //   if (directories.includes("locations")) {
+  //     const locationContent = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + "locations");
+  //     currentCoordinates = [locationContent["coords"]["latitude"], locationContent["coords"]["longitude"]];
+  //   }
+
+
+  //   await FileSystem.writeAsStringAsync(FileSystem.documentDirectory + "locations", JSON.stringify(location));
+  //   console.log("Location content:", locationContent);
+  // }
+
+  const startRecording = () => {
+    setIsRecording(true);
+    setRecordedCoordinates([]);
+    intervalRef.current = setInterval(updateLocation, 5000);
+  };
+
+  const stopRecording = async () => {
+    setIsRecording(false);
+    clearInterval(intervalRef.current);
+
+    const geoJsonData = buildGeoJsonFromCoordinates(recordedCoordinates);
+
+    await FileSystem.writeAsStringAsync(FileSystem.documentDirectory + "recordedPath", JSON.stringify(geoJsonData));
+    setHasSavedFile(true);
+
+    const directories = await FileSystem.readDirectoryAsync(FileSystem.documentDirectory);
+    console.log("Directories:", directories);
+    const fileContent = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + "recordedPath");
+    console.log("File content:", fileContent);
+  };
+
+  // useEffect(() => {
+  //   getLocation();
+  //   const locationInterval = setInterval(() => {
+  //     if (isRecording)
+  //       logLocation();
+  //   }, 1000);
+
+  //   return () => {
+  //     clearInterval(locationInterval);
+  //   }
+  // }, [isRecording]);
 
   useEffect(() => {
-    getLocation();
-    const locationInterval = setInterval(() => {
-      console.log("Record location:", recordLocation);
-      if (recordLocation)
-        logLocation();
-    }, 1000);
-
-    return () => {
-      clearInterval(locationInterval);
-    }
-  }, [recordLocation]);
-
-  const { latitude, longitude } = location?.coords || {};
-
+    checkExistingFile();
+  }, [hasSavedFile]);
 
   const [text, setText] = useState("titulo");
-
-  // const [kmlURI, setkmlURI] = useState(null);
 
 
   const [geoJson, setGeoJson] = useState({
@@ -154,10 +132,6 @@ export default function App() {
     ]
   })
 
-  useEffect(() => {
-    getLocation();
-  }, []);
-  // return map on current location
   return (
     <View style={styles.container}>
       <MapView
@@ -209,10 +183,7 @@ export default function App() {
           geojson={geoJson}
           tracksViewChanges={true}
         />
-        <Geojson
-          geojson={myGeoJson}
-          tracksViewChanges={true}
-        />
+
       </MapView>
       <TouchableOpacity
         onPress={() => {
@@ -243,15 +214,15 @@ export default function App() {
       </TouchableOpacity>
       <TouchableOpacity
         onPress={async () => {
-          // console.log("Record location before toggle:", recordLocation);
-          // if (!recordLocation)
-          //   startRecording();
-          // setRecordLocation(!recordLocation);
-          await logLocation();
+          if (isRecording) {
+            await stopRecording();
+          } else {
+            await startRecording();
+          }
         }}
         style={[
           styles.circleButton,
-          { bottom: 20, left: 100 }
+          { bottom: 20, left: 100, backgroundColor: isRecording ? "rgba(74, 74, 74, 0.5)" : "rgba(255, 255, 255, 0.3)" }
         ]}
       >
         <Text style={{ color: "#fff" }}>R</Text>
@@ -273,9 +244,8 @@ export default function App() {
             <TouchableOpacity
               style={styles.option}
               onPress={async () => {
-                // local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
                 try {
-                  file = await local.GetLocalFile();
+                  file = await getLocalFile();
 
                   setGeoJson(JSON.parse(file))
 
@@ -291,42 +261,24 @@ export default function App() {
               style={styles.option}
               onPress={async () => {
                 const jsonData = JSON.stringify(geoJson)
-                fileUri = await local.downloadKML(jsonData, text + ".kml")
-                await local.shareFile(fileUri)
+                fileUri = await downloadKML(jsonData, text + ".kml")
+                await shareFile(fileUri)
               }}
             >
               <Text style={styles.optionText}>Export KML</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.option}
+              disabled={!hasSavedFile}
+              onPress={async () => {
+                await shareFile(FileSystem.documentDirectory + "recordedPath")
+              }}
+            >
+              <Text style={styles.optionText}>Export Recorded Path</Text>
+            </TouchableOpacity>
           </View>
         </Modal>
       </TouchableOpacity>
-      {/* <Button
-        onPress={async ()=>{
-          // local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
-          try{
-            file = await local.GetLocalFile();
-            
-            setGeoJson(JSON.parse(file))
-
-          }
-          catch(erro){
-            console.log("err: "+erro)
-          }
-          } }
-        title="Import KML"
-        color="#fff"
-        accessibilityLabel="Take Url From"
-      />
-      <Button
-        onPress={async ()=>{
-            const jsonData = JSON.stringify(geoJson)
-            fileUri = await local.downloadKML(jsonData,text+".kml")
-            await local.shareFile(fileUri)
-          } }
-        title="Export KML"
-        color="#fff"
-        accessibilityLabel="Take Url From"
-      /> */}
     </View>
   );
 }
