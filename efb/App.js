@@ -8,6 +8,7 @@ import { LocalTile, Marker, Polyline, Polygon } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/FontAwesome'
 
 import * as local from './LocalFiles';
+import * as translate from './GeoDocs'
 
 // // latitude and longitude
 const latitude = 37.78825;
@@ -116,8 +117,8 @@ export default function App() {
 
   const logLocation = async () => {
     getLocation();
-    console.log("Record location:", recordLocation);
-    console.log("Location:", location);
+    // console.log("Record location:", recordLocation);
+    // console.log("Location:", location);
     local.saveLocation(location, locationFile);
   }
 
@@ -268,9 +269,9 @@ export default function App() {
             onPress={async ()=>{
               // local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
               try{
-                file = await local.GetLocalFile();
-                
-                setGeoJson(JSON.parse(file))
+                fileKML = await local.GetLocalFile();
+                fileGeoJSON = translate.KML2GeoJSON(fileKML);
+                setGeoJson(fileGeoJSON)
     
               }
               catch(erro){
@@ -283,8 +284,9 @@ export default function App() {
           <TouchableOpacity 
             style={styles.option} 
             onPress={async ()=>{
-              const jsonData = JSON.stringify(geoJson)
-              fileUri = await local.downloadKML(jsonData,text+".kml")
+              const jsonData = JSON.stringify(myGeoJson)
+              kmlData = translate.GeoJSON2KML(jsonData);
+              fileUri = await local.downloadKML(kmlData,text+".kml")
               await local.shareFile(fileUri)
             }}
           >
