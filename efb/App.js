@@ -27,30 +27,37 @@ export default function App() {
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, [sidebarOpen]);
+  }, [sidebarOpen, layers]);
 
   const handleOutsidePress = () => {
     setSidebarOpen(false);
   };
 
   const [layers, setLayers] = useState([]);
+  const [layerEditId, setLayerEditId] = useState(null);
 
   return(
     <TouchableWithoutFeedback onPressIn={handleOutsidePress}>
       <View style={styles.container}>
         <Animated.View style={[styles.overlay, {opacity}]}>
-          <View style={{position:'absolute', top:30, right: 20, zIndex: 500}}>
+          <View style={{position:'absolute', top:50, right: 20, zIndex: 500}}>
             {!sidebarOpen && <TouchableOpacity
               onPress={() => {
                 setSidebarOpen(!sidebarOpen);
               }}
             >
-              <Icon name="bars" size={30} color="#abc" />
+              <Icon name="bars" size={30} color="rgba(0,0,0,0.5)" />
             </TouchableOpacity>}
           </View>
-          <Map/>
+          <Map layerEditId={layerEditId} layers={layers} setLayers={setLayers} />
         </Animated.View>
-        <Sidebar open={sidebarOpen} layers={layers} setLayers={setLayers} />
+        <Sidebar 
+          open={sidebarOpen} 
+          layers={layers} 
+          setLayers={setLayers} 
+          layerEditId={layerEditId}
+          setLayerEditId={setLayerEditId}
+        />
         </View>
     </TouchableWithoutFeedback>
   );
@@ -63,12 +70,6 @@ const styles = StyleSheet.create({
     marginTop: '100px',
     paddingBottom: '100px',
     backgroundColor: 'black',
-    // alignItems: 'center',
-    // display: 'flex',
-    // height: '100%',
-    // width: '100%',
-    // position: ',
-    // justifyContent: 'center',
   },
   overlay: {
     position: 'absolute',

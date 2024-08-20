@@ -9,6 +9,7 @@ import { TouchableOpacity } from 'react-native';
 import uuid from 'react-native-uuid';
 import { FlatList } from 'react-native';
 import { Modal } from 'react-native';
+import Editor from './Editor';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,26 +26,47 @@ export default function Sidebar(props) {
         let newLayer = {
             id: uuid.v4(),
             name: "Camada " + proposedNumber,
+            visible: true,
         }
 
         props.setLayers((prev) => [...prev, newLayer]);
+        if(props.layerEditId === null)
+          props.setLayerEditId(newLayer.id);
     }
 
-    const handleLayerEdit = (id) => {
-        let layer = props.layers.find((layer) => layer.id === id);
+    const toggleLayerVisibility = (id) => {
+      props.setLayers((prev) => prev.map((layer) => {
+        if(layer.id === id)
+          return { ...layer, visible: !layer.visible };
+        return layer;
+      }));
     }
 
-    const renderLayer = ({ item }) => (
-        <View style={styles.layerContainer}>
-          <TouchableOpacity onLongPress={toggleModal}> 
-            <Text>{item.name}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {
-            props.setLayers((prev) => prev.filter((layer) => layer.id !== item.id));
-          }}>
-            <Text>Remove</Text>
-            </TouchableOpacity>
+    const [ layerSelectId, setlayerSelectId ] = useState(null);
+
+    const renderLayer = ({item}) => (
+        <TouchableOpacity 
+          onLongPress={() => {
+            setlayerSelectId(item.id);
+            toggleModal();
+          }}
+          onPress={() => {
+            toggleLayerVisibility(item.id);
+          }}
+          style={{
+            flex: 1,
+          }}
+        > 
+        <View style={[
+          styles.layerContainer, 
+          item.id === layerSelectId ? {backgroundColor: 'rgba(0,0,0,0.3)'} : {},
+          !item.visible ? {opacity: 0.2} : {} // Apply opacity if the layer is not visible
+        ]}>
+        <Text style={item.id === props.layerEditId ? {fontWeight: 'bold'} : {}}>
+          {item.name}
+          </Text>
         </View>
+        </TouchableOpacity>
       );
 
     useEffect(() => {
@@ -58,6 +80,8 @@ export default function Sidebar(props) {
     const [modalVisible, setModalVisible] = useState(false);
     const toggleModal = () => {
       setModalVisible(!modalVisible);
+      if(modalVisible)
+        setlayerSelectId(null);
     };
 
     return (
@@ -81,31 +105,14 @@ export default function Sidebar(props) {
                     // keyExtractor={item => item.id.toString()}
                 />
                 </View>
-                <Modal
-                  animationType="slide"
-                  transparent={true}
-                  visible={modalVisible}
-                  onRequestClose={() => { console.log("Modal has been closed.") }}
-                >
-                  <TouchableOpacity 
-                    style={{flex: 1}}
-                    activeOpacity={1}
-                    onPress={toggleModal}
-                  >
-                  <View style={styles.modalContainer}>
-                      <TouchableWithoutFeedback
-                        style={styles.option}
-                        // onPress={toggleModal}
-                      >
-                        <View style={styles.modalContent}>
-                          <TouchableOpacity onPress={toggleModal}>
-                            <Text style={styles.optionText}>Import KML</Text>
-                          </TouchableOpacity>
-                    </View>
-                      </TouchableWithoutFeedback>
-                  </View>
-                  </TouchableOpacity>
-                </Modal>
+                <Editor 
+                  modalVisible={modalVisible} 
+                  toggleModal={toggleModal} 
+                  setLayers={props.setLayers} 
+                  layers={props.layers} 
+                  layerSelectId={layerSelectId}
+                  setLayerEditId={props.setLayerEditId}
+                />
             </Animated.View>
         </TouchableWithoutFeedback>
     );
