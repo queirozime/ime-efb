@@ -125,7 +125,7 @@ export default function App() {
   useEffect(() => {
     getLocation();
     const locationInterval = setInterval(() => {
-      console.log("Record location:", recordLocation);
+      // console.log("Record location:", recordLocation);
       if(recordLocation)
         logLocation();
     }, 1000);
@@ -144,14 +144,24 @@ export default function App() {
 
 
   const [geoJson,setGeoJson] =  useState ({ "type": "FeatureCollection",
-    "features" : [
-      
-      ]
+    "features": [{
+      type: 'Feature',
+      properties: {"name":"teste"},
+      geometry: {
+        type: 'Point',
+        coordinates: [64.165329, 48.844287],
+      }}
+    ]
     })
+
+  useEffect(() => {
+      console.log("Updated geoJson:", geoJson);
+  }, [geoJson]);
 
   useEffect(() => {
     getLocation();
   }, []);
+  
   // return map on current location
   return(
     <View style={styles.container}>
@@ -204,10 +214,6 @@ export default function App() {
         geojson={geoJson}
         tracksViewChanges = {true}
       />
-       <Geojson
-        geojson={myGeoJson}
-        tracksViewChanges = {true}
-      />
       </MapView>
       <TouchableOpacity
         onPress={() => {
@@ -238,7 +244,7 @@ export default function App() {
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          console.log("Record location before toggle:", recordLocation);
+          // console.log("Record location before toggle:", recordLocation);
           if(!recordLocation)
             startRecording();
           setRecordLocation(!recordLocation);
@@ -269,10 +275,10 @@ export default function App() {
             onPress={async ()=>{
               // local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
               try{
-                fileKML = await local.GetLocalFile();
-                fileGeoJSON = translate.KML2GeoJSON(fileKML);
+                let fileKML = await local.GetLocalFile();
+                let fileGeoJSON = await translate.KML2GeoJSON(fileKML);
+                console.log("Before set:",fileGeoJSON)
                 setGeoJson(fileGeoJSON)
-    
               }
               catch(erro){
                 console.log("err: "+erro)
@@ -284,10 +290,16 @@ export default function App() {
           <TouchableOpacity 
             style={styles.option} 
             onPress={async ()=>{
+              try{
+
               const jsonData = JSON.stringify(myGeoJson)
-              kmlData = translate.GeoJSON2KML(jsonData);
+              let kmlData = await translate.GeoJSON2KML(jsonData);
               fileUri = await local.downloadKML(kmlData,text+".kml")
               await local.shareFile(fileUri)
+              }
+              catch(erro){
+                console.log("err: "+erro)
+              }
             }}
           >
             <Text style={styles.optionText}>Export KML</Text>

@@ -126,7 +126,6 @@ export async function downloadFolder(uriDownload,title){
 
 export async function downloadKML(data,title){
 
-
   const path = FileSystem.documentDirectory
   const fileUri  = path+title
   await FileSystem.writeAsStringAsync(fileUri, data);
