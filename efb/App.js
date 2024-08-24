@@ -145,12 +145,13 @@ export default function App() {
 
   const [geoJson,setGeoJson] =  useState ({ "type": "FeatureCollection",
     "features": [{
-      type: 'Feature',
-      properties: {"name":"teste"},
-      geometry: {
-        type: 'Point',
-        coordinates: [64.165329, 48.844287],
-      }}
+      "type": 'Feature',
+      "properties": {"name":"teste"},
+      "geometry": {
+        "type": 'Point',
+        "coordinates": [64.165329, 48.844287],
+      }
+    }
     ]
     })
 
@@ -277,7 +278,6 @@ export default function App() {
               try{
                 let fileKML = await local.GetLocalFile();
                 let fileGeoJSON = await translate.KML2GeoJSON(fileKML);
-                console.log("Before set:",fileGeoJSON)
                 setGeoJson(fileGeoJSON)
               }
               catch(erro){
@@ -292,7 +292,7 @@ export default function App() {
             onPress={async ()=>{
               try{
 
-              const jsonData = JSON.stringify(myGeoJson)
+              const jsonData = JSON.stringify(geoJson)
               let kmlData = await translate.GeoJSON2KML(jsonData);
               fileUri = await local.downloadKML(kmlData,text+".kml")
               await local.shareFile(fileUri)

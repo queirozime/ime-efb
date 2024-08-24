@@ -1,16 +1,16 @@
 import { DOMParser } from "xmldom"; // for parsing your KLM string, converting it to an XML doc
 import { kml } from "@tmcw/togeojson"; // for converting KLM docs to JSON
 import tokml from "tokml";
+import { object } from "prop-types";
+
 
 const parser = new DOMParser();
-
 export async function KML2GeoJSON(routeKml){
     const dataKml = parser.parseFromString(routeKml);
-    const routeJson = kml(dataKml);
+    const routeJson =  kml(dataKml);
     let stringGeoJSON = JSON.stringify(routeJson);
     let objectGeoJSON = JSON.parse(stringGeoJSON);
-    let resultStringGeoJson = JSON.stringify(objectGeoJSON)
-    return resultStringGeoJson;
+    return objectGeoJSON;
 }
 
 // Para Usar o KML2GeoJSON
