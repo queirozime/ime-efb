@@ -15,7 +15,7 @@ export default function App() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [geoJson, setGeoJson] = useState({
     "type": "FeatureCollection",
-    "features": []
+    "features": [],
   })
 
   const [opacity] = useState(new Animated.Value(0));
@@ -59,7 +59,13 @@ export default function App() {
               <Icon name="bars" size={30} color="rgba(0,0,0,0.5)" />
             </TouchableOpacity>}
           </View>
-          <Map layerEditId={layerEditId} layers={layers} setLayers={setLayers} geoJson={geoJson} />
+          <Map 
+            layerEditId={layerEditId} 
+            layers={layers} 
+            setLayers={setLayers} 
+            geoJson={geoJson} 
+          
+         />
         </Animated.View>
         <Sidebar
           open={sidebarOpen}
@@ -68,8 +74,10 @@ export default function App() {
           layerEditId={layerEditId}
           setLayerEditId={setLayerEditId}
           handleToggleExport={setExportModalOpen}
+          setGeoJson={setGeoJson} 
+          geoJson={geoJson} 
         />
-        <Export modalVisible={exportModalOpen} toggleOpen={setExportModalOpen} geoJson={geoJson} setGeoJson={setGeoJson} />
+        
       </View>
     </TouchableWithoutFeedback>
   );

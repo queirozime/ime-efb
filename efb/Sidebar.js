@@ -109,6 +109,8 @@ export default function Sidebar(props) {
         <Export
           modalVisible={modalVisible}
           setModalVisible={setModalVisible}
+          setGeoJson={props.setGeoJson} 
+          geoJson={props.geoJson} 
         />
       </Animated.View>
     </TouchableWithoutFeedback>

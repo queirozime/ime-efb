@@ -168,7 +168,7 @@ export default function Map(props) {
         <Polyline coordinates={recordedCoordinates} strokeColor="red" strokeWidth={5} />
         <Geojson
           geojson={props.geoJson}
-          tracksViewChanges={true}
+          tracksViewChanges = {true}
         />
       </MapView>
       <TouchableOpacity

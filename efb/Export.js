@@ -8,10 +8,10 @@ import * as FileSystem from 'expo-file-system';
 
 
 export default function Export(props) {
-
   const toggleModal = () => {
     props.setModalVisible(!props.modalVisible);
   }
+  
 
   return (
     <Modal
@@ -33,15 +33,9 @@ export default function Export(props) {
                 style={styles.option}
                 onPress={async () => {
                   // local.downloadFolder("http://techslides.com/demos/sample-videos","testeFolder")
-                  try {
                     let fileKML = await getLocalFile();
                     let fileGeoJSON = await translate.KML2GeoJSON(fileKML);
-                    console.log("Before set:", fileGeoJSON)
                     props.setGeoJson(fileGeoJSON)
-                  }
-                  catch (erro) {
-                    console.log("err: " + erro)
-                  }
                 }}
               >
                 <Text style={styles.optionText}>Import KML</Text>
@@ -49,16 +43,10 @@ export default function Export(props) {
               <TouchableOpacity
                 style={styles.option}
                 onPress={async () => {
-                  try {
                     const jsonData = JSON.stringify(props.geoJson)
-                    let kmlData = translate.GeoJSON2KML(jsonData);
-                    let fileUri = await downloadKML(kmlData, "text" + ".kml") // lembrar de colocar o titulo no lugar do text
+                    let kmlData = await translate.GeoJSON2KML(jsonData);
+                    let fileUri = await downloadKML(kmlData, "titulo" + ".kml") // lembrar de colocar o titulo no lugar do text
                     await shareFile(fileUri)
-
-                  }
-                  catch (erro) {
-                    console.log("err: " + erro)
-                  }
                 }}
               >
                 <Text style={styles.optionText}>Export KML</Text>
