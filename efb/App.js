@@ -1,25 +1,23 @@
 import { StyleSheet, Text, View, Button, Platform, TouchableOpacity, TextInput, TouchableWithoutFeedback } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import * as Location from "expo-location";
-import Modal from 'react-native-modal';
 
-import MapView, { UrlTile, Geojson} from 'react-native-maps';
-import { LocalTile, Marker, Polyline, Polygon } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/FontAwesome'
 
-import * as local from './LocalFiles';
 import Map from './Map';
 import Sidebar from './Sidebar';
 import { Animated } from 'react-native';
-import { useRef } from 'react';
+import Export from './Export';
 
-// // latitude and longitude
-const latitude = 37.78825;
-const longitude = -122.4324;
-          
+
 export default function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [geoJson, setGeoJson] = useState({
+    "type": "FeatureCollection",
+    "features": []
+  })
+
   const [opacity] = useState(new Animated.Value(0));
   useEffect(() => {
     Animated.timing(opacity, {
@@ -36,11 +34,23 @@ export default function App() {
   const [layers, setLayers] = useState([]);
   const [layerEditId, setLayerEditId] = useState(null);
 
-  return(
+  return (
     <TouchableWithoutFeedback onPressIn={handleOutsidePress}>
       <View style={styles.container}>
-        <Animated.View style={[styles.overlay, {opacity}]}>
-          <View style={{position:'absolute', top:50, right: 20, zIndex: 500}}>
+        <Animated.View style={[styles.overlay, { opacity }]}>
+          <View style={{
+            position: 'absolute',
+            top: 50,
+            right: 20,
+            zIndex: 500,
+            width: 60,
+            height: 60,
+            backgroundColor: 'white',
+            borderRadius: 30,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
             {!sidebarOpen && <TouchableOpacity
               onPress={() => {
                 setSidebarOpen(!sidebarOpen);
@@ -49,16 +59,18 @@ export default function App() {
               <Icon name="bars" size={30} color="rgba(0,0,0,0.5)" />
             </TouchableOpacity>}
           </View>
-          <Map layerEditId={layerEditId} layers={layers} setLayers={setLayers} />
+          <Map layerEditId={layerEditId} layers={layers} setLayers={setLayers} geoJson={geoJson} />
         </Animated.View>
-        <Sidebar 
-          open={sidebarOpen} 
-          layers={layers} 
-          setLayers={setLayers} 
+        <Sidebar
+          open={sidebarOpen}
+          layers={layers}
+          setLayers={setLayers}
           layerEditId={layerEditId}
           setLayerEditId={setLayerEditId}
+          handleToggleExport={setExportModalOpen}
         />
-        </View>
+        <Export modalVisible={exportModalOpen} toggleOpen={setExportModalOpen} geoJson={geoJson} setGeoJson={setGeoJson} />
+      </View>
     </TouchableWithoutFeedback>
   );
 }
@@ -81,7 +93,7 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
   circleButton: {
-    width: '100%', 
+    width: '100%',
     height: '100%', // same as height 
     borderRadius: 30, // Half of the width/height
     justifyContent: 'center',
