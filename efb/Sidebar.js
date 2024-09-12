@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text } from 'react-native';
 import { useEffect } from 'react';
 import { Dimensions } from 'react-native';
@@ -12,7 +12,7 @@ import * as FileSystem from 'expo-file-system';
 import { getLocalFile, shareFile, downloadKML } from './LocalFiles';
 import * as translate from './GeoDocs';
 import { styles } from './styles';
-import { Alert } from 'react-native';
+import { GlobalStateContext } from './Context';
 
 
 
@@ -22,6 +22,8 @@ export default function Sidebar(props) {
   const [translateX] = useState(new Animated.Value(props.open ? 0.6 * width : width));
 
   const [hasSavedFile, setHasSavedFile] = useState(false);
+
+  const { isDrawing, setIsDrawing } = useContext(GlobalStateContext);
 
   const checkSavedFile = async () => {
     const directories = await FileSystem.readDirectoryAsync(FileSystem.documentDirectory);
@@ -45,8 +47,9 @@ export default function Sidebar(props) {
       }
       else setHasSavedFile(false);
     }
-
     checkSavedFile();
+
+    if (props.open) setIsDrawing(false);
   }, [props.open, hasSavedFile]);
 
   return (
@@ -73,13 +76,13 @@ export default function Sidebar(props) {
           <TouchableOpacity
             style={styles.sideBarTouchable}
             onPress={async () => {
-              try{
+              try {
                 let fileKML = await getLocalFile();
                 let fileGeoJSON = await translate.KML2GeoJSON(fileKML);
                 props.setGeoJson(fileGeoJSON)
               }
-              catch(err){
-                console.log("err:",err)
+              catch (err) {
+                console.log("err:", err)
               }
             }}
           >

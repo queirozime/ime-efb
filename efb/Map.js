@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { UrlTile } from 'react-native-maps';
 import * as Location from "expo-location";
@@ -11,12 +11,13 @@ import MaterialCommunityIconsI from 'react-native-vector-icons/MaterialCommunity
 import { buildGeoJsonFromCoordinates, updateGeoJsonFromDrawing } from './utils';
 import RecordManager from './RecordManager';
 import { styles } from './styles';
+import { GlobalStateContext } from './Context';
 
 
 
 export default function Map(props) {
 
-  const [isDrawing, setIsDrawing] = useState(false);
+  const { isDrawing, setIsDrawing } = useContext(GlobalStateContext);
 
   const [isFollowingUser, setIsFollowingUser] = useState(true);
   const [location, setLocation] = useState({ latitude: -22.9, longitude: -43.2, latitudeDelta: 0.0922, longitudeDelta: 0.0421 });
@@ -40,11 +41,11 @@ export default function Map(props) {
   const intervalRef = useRef(null);
 
   const savePolyline = () => {
-      if (polyline.length > 1){
-        setPolylines([...polylines, polyline]);
-        let updatedGeoJson = updateGeoJsonFromDrawing(props.geoJson,polyline);
-        props.setGeoJson(updatedGeoJson)
-      }
+    if (polyline.length > 1) {
+      setPolylines([...polylines, polyline]);
+      let updatedGeoJson = updateGeoJsonFromDrawing(props.geoJson, polyline);
+      props.setGeoJson(updatedGeoJson)
+    }
     setPolyline([]);
 
   }
@@ -151,7 +152,7 @@ export default function Map(props) {
     };
 
     checkExistingFile();
-  }, [hasSavedFile]);
+  }, [hasSavedFile, isDrawing]);
 
 
   return (
@@ -184,7 +185,6 @@ export default function Map(props) {
           setIsDrawing(!isDrawing);
         }}
         onLongPress={() => {
-          console.log("Long press detected");
           setIsDrawing(true);
         }}
         style={[

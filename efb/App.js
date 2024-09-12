@@ -7,6 +7,7 @@ import Map from './Map';
 import Sidebar from './Sidebar';
 import { Animated } from 'react-native';
 import ExportFileButton from './ButtonExport'
+import { GlobalStateProvider } from './Context';
 
 
 export default function App() {
@@ -33,50 +34,52 @@ export default function App() {
   };
 
   return (
-    <TouchableWithoutFeedback onPressIn={handleOutsidePress}>
-      <View style={styles.container}>
-        <Animated.View style={[styles.overlay, { opacity }]}>
-          <View style={{
-            position: 'absolute',
-            top: 50,
-            right: 20,
-            zIndex: 500,
-            width: 60,
-            height: 60,
-            backgroundColor: 'white',
-            borderRadius: 30,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-            {!sidebarOpen && <TouchableOpacity
-              onPress={() => {
-                setSidebarOpen(!sidebarOpen);
-              }}
-            >
-              <Icon name="bars" size={30} color="rgba(0,0,0,0.5)" />
-            </TouchableOpacity>}
-          </View>
-          <Map
+    <GlobalStateProvider>
+      <TouchableWithoutFeedback onPressIn={handleOutsidePress}>
+        <View style={styles.container}>
+          <Animated.View style={[styles.overlay, { opacity }]}>
+            <View style={{
+              position: 'absolute',
+              top: 50,
+              right: 20,
+              zIndex: 500,
+              width: 60,
+              height: 60,
+              backgroundColor: 'white',
+              borderRadius: 30,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              {!sidebarOpen && <TouchableOpacity
+                onPress={() => {
+                  setSidebarOpen(!sidebarOpen);
+                }}
+              >
+                <Icon name="bars" size={30} color="rgba(0,0,0,0.5)" />
+              </TouchableOpacity>}
+            </View>
+            <Map
+              geoJson={geoJson}
+              setGeoJson={setGeoJson}
+            />
+          </Animated.View>
+          <Sidebar
+            open={sidebarOpen}
+            setGeoJson={setGeoJson}
             geoJson={geoJson}
-            setGeoJson ={setGeoJson}
+            modalVisible={modalExportVisible}
+            setModalVisible={setModalExportVisible}
           />
-        </Animated.View>
-        <Sidebar
-          open={sidebarOpen}
-          setGeoJson={setGeoJson}
-          geoJson={geoJson}
-          modalVisible={modalExportVisible}
-          setModalVisible = {setModalExportVisible}
-        />
-        <ExportFileButton 
-          geoJson = {geoJson} 
-          modalVisible={modalExportVisible} 
-          setModalVisible = {setModalExportVisible}  
-        />
+          <ExportFileButton
+            geoJson={geoJson}
+            modalVisible={modalExportVisible}
+            setModalVisible={setModalExportVisible}
+          />
 
-      </View>
-    </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
+    </GlobalStateProvider>
   );
 }
 
