@@ -34,21 +34,6 @@ export async function readLocationFile() {
   }
 }
 
-// async function getDirectoryPath() {
-//     try {
-//       const result = await DocumentPicker.pickMultiple({
-//         type: 'folder',
-//       });
-//       if (result.length > 0) {
-//         const sourcePath = result[0].uri;
-//         console.log('Pasta selecionada:', sourcePath);
-//         return sourcePath
-
-//       }
-//     } catch (error) {
-//       console.error('Erro ao selecionar a pasta:', error);
-//     }
-// }
 
 async function createFolder(path) {
   try {

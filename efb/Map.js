@@ -8,9 +8,10 @@ import MapView, { Geojson } from 'react-native-maps';
 import FontAwesomeI from 'react-native-vector-icons/FontAwesome'
 import MaterialCommunityIconsI from 'react-native-vector-icons/MaterialCommunityIcons'
 
-import { buildGeoJsonFromCoordinates } from './utils';
+import { buildGeoJsonFromCoordinates, updateGeoJsonFromDrawing } from './utils';
 import RecordManager from './RecordManager';
 import { styles } from './styles';
+
 
 
 export default function Map(props) {
@@ -32,6 +33,8 @@ export default function Map(props) {
   const [refresh, setRefresh] = useState(false);
   const [action, setAction] = useState("none");
 
+
+
   const [recordManagerModalOpen, setRecordManagerModalOpen] = useState(false);
 
   const intervalRef = useRef(null);
@@ -39,7 +42,11 @@ export default function Map(props) {
   const savePolyline = () => {
     if (polyline.length > 1)
       setPolylines([...polylines, polyline]);
+      // let updatedGeoJson = updateGeoJsonFromDrawing(props.geoJson,polyline);
+      // props.setGeoJson(updatedGeoJson)
+      // console.log(props.geoJson)
     setPolyline([]);
+
   }
 
   function onTouchMove(coordinate) {

@@ -35,7 +35,6 @@ function stringifyComplexProperties(feature) {
 }
 
 export async function GeoJSON2KML(routeJson) {
-    console.log(routeJson)
     const geojsonData = JSON.parse(routeJson);
     geojsonData.features.forEach(stringifyComplexProperties);
     let routeKml = tokml(geojsonData);

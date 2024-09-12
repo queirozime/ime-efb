@@ -12,6 +12,7 @@ import * as FileSystem from 'expo-file-system';
 import { getLocalFile, shareFile, downloadKML } from './LocalFiles';
 import * as translate from './GeoDocs';
 import { styles } from './styles';
+import { Alert } from 'react-native';
 
 
 
@@ -62,10 +63,8 @@ export default function Sidebar(props) {
           <TouchableOpacity
             style={styles.sideBarTouchable}
             onPress={async () => {
-              const jsonData = JSON.stringify(props.geoJson)
-              let kmlData = await translate.GeoJSON2KML(jsonData);
-              let fileUri = await downloadKML(kmlData, "titulo" + ".kml") // lembrar de colocar o titulo no lugar do text
-              await shareFile(fileUri)
+              props.setModalVisible(!props.modalVisible)
+
             }}
           >
             <FontAwesomeI name="export" size={25} color="black" />
@@ -74,9 +73,14 @@ export default function Sidebar(props) {
           <TouchableOpacity
             style={styles.sideBarTouchable}
             onPress={async () => {
-              let fileKML = await getLocalFile();
-              let fileGeoJSON = await translate.KML2GeoJSON(fileKML);
-              props.setGeoJson(fileGeoJSON)
+              try{
+                let fileKML = await getLocalFile();
+                let fileGeoJSON = await translate.KML2GeoJSON(fileKML);
+                props.setGeoJson(fileGeoJSON)
+              }
+              catch(err){
+                console.log("err:",err)
+              }
             }}
           >
             <FontAwesomeI name="import" size={25} color="black" />

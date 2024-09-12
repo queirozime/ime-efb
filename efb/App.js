@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 import Map from './Map';
 import Sidebar from './Sidebar';
 import { Animated } from 'react-native';
+import ExportFileButton from './ButtonExport'
 
 
 export default function App() {
@@ -15,6 +16,8 @@ export default function App() {
     "type": "FeatureCollection",
     "features": [],
   })
+  const [modalExportVisible, setModalExportVisible] = useState(false);
+
 
   const [opacity] = useState(new Animated.Value(0));
   useEffect(() => {
@@ -56,13 +59,22 @@ export default function App() {
           </View>
           <Map
             geoJson={geoJson}
+            setGeoJson ={setGeoJson}
           />
         </Animated.View>
         <Sidebar
           open={sidebarOpen}
           setGeoJson={setGeoJson}
           geoJson={geoJson}
+          modalVisible={modalExportVisible}
+          setModalVisible = {setModalExportVisible}
         />
+        <ExportFileButton 
+          geoJson = {geoJson} 
+          modalVisible={modalExportVisible} 
+          setModalVisible = {setModalExportVisible}  
+        />
+
       </View>
     </TouchableWithoutFeedback>
   );
