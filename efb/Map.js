@@ -40,11 +40,11 @@ export default function Map(props) {
   const intervalRef = useRef(null);
 
   const savePolyline = () => {
-    if (polyline.length > 1)
-      setPolylines([...polylines, polyline]);
-      // let updatedGeoJson = updateGeoJsonFromDrawing(props.geoJson,polyline);
-      // props.setGeoJson(updatedGeoJson)
-      // console.log(props.geoJson)
+      if (polyline.length > 1){
+        setPolylines([...polylines, polyline]);
+        let updatedGeoJson = updateGeoJsonFromDrawing(props.geoJson,polyline);
+        props.setGeoJson(updatedGeoJson)
+      }
     setPolyline([]);
 
   }

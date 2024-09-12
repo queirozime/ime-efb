@@ -26,7 +26,8 @@ const lineToGeoJson = (lines) =>{
         }
      };
     lines.forEach(line => {
-        newLine.geometry.coordinates.push(line)
+        let arrayLine = [line.longitude.toFixed(4),line.latitude.toFixed(4),"0"]
+        newLine.geometry.coordinates.push(arrayLine)
     });
     return newLine
 }
