@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Button, Platform, TouchableOpacity, TextInput, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import React, { useEffect, useState } from 'react';
 
 import Icon from 'react-native-vector-icons/FontAwesome'
@@ -6,13 +6,11 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 import Map from './Map';
 import Sidebar from './Sidebar';
 import { Animated } from 'react-native';
-import Export from './Export';
 
 
 export default function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [exportModalOpen, setExportModalOpen] = useState(false);
   const [geoJson, setGeoJson] = useState({
     "type": "FeatureCollection",
     "features": [],
@@ -25,14 +23,11 @@ export default function App() {
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, [sidebarOpen, layers]);
+  }, [sidebarOpen]);
 
   const handleOutsidePress = () => {
     setSidebarOpen(false);
   };
-
-  const [layers, setLayers] = useState([]);
-  const [layerEditId, setLayerEditId] = useState(null);
 
   return (
     <TouchableWithoutFeedback onPressIn={handleOutsidePress}>
@@ -59,25 +54,15 @@ export default function App() {
               <Icon name="bars" size={30} color="rgba(0,0,0,0.5)" />
             </TouchableOpacity>}
           </View>
-          <Map 
-            layerEditId={layerEditId} 
-            layers={layers} 
-            setLayers={setLayers} 
-            geoJson={geoJson} 
-          
-         />
+          <Map
+            geoJson={geoJson}
+          />
         </Animated.View>
         <Sidebar
           open={sidebarOpen}
-          layers={layers}
-          setLayers={setLayers}
-          layerEditId={layerEditId}
-          setLayerEditId={setLayerEditId}
-          handleToggleExport={setExportModalOpen}
-          setGeoJson={setGeoJson} 
-          geoJson={geoJson} 
+          setGeoJson={setGeoJson}
+          geoJson={geoJson}
         />
-        
       </View>
     </TouchableWithoutFeedback>
   );

@@ -6,67 +6,29 @@ import { Animated } from 'react-native';
 import { useState } from 'react';
 import { TouchableWithoutFeedback } from 'react-native';
 import { TouchableOpacity } from 'react-native';
-import uuid from 'react-native-uuid';
-import { FlatList } from 'react-native';
-import Export from './Export';
+import FontAwesomeI from 'react-native-vector-icons/MaterialCommunityIcons'
+import * as FileSystem from 'expo-file-system';
+
+import { getLocalFile, shareFile, downloadKML } from './LocalFiles';
+import * as translate from './GeoDocs';
+import { styles } from './styles';
+
+
 
 const { width, height } = Dimensions.get('window');
 
 export default function Sidebar(props) {
   const [translateX] = useState(new Animated.Value(props.open ? 0.6 * width : width));
 
-  const handleLayerAdd = () => {
-    let currentNames = props.layers.map((layer) => layer.name);
-    let proposedNumber = props.layers.length + 1;
+  const [hasSavedFile, setHasSavedFile] = useState(false);
 
-    while (currentNames.includes("Camada " + proposedNumber))
-      proposedNumber++;
-
-    let newLayer = {
-      id: uuid.v4(),
-      name: "Camada " + proposedNumber,
-      visible: true,
+  const checkSavedFile = async () => {
+    const directories = await FileSystem.readDirectoryAsync(FileSystem.documentDirectory);
+    if (directories.find((dir) => dir === "recordedPath.json")) {
+      setHasSavedFile(true);
     }
-
-    props.setLayers((prev) => [...prev, newLayer]);
-    if (props.layerEditId === null)
-      props.setLayerEditId(newLayer.id);
+    else setHasSavedFile(false);
   }
-
-  const toggleLayerVisibility = (id) => {
-    props.setLayers((prev) => prev.map((layer) => {
-      if (layer.id === id)
-        return { ...layer, visible: !layer.visible };
-      return layer;
-    }));
-  }
-
-  const [layerSelectId, setlayerSelectId] = useState(null);
-
-  const renderLayer = ({ item }) => (
-    <TouchableOpacity
-      onLongPress={() => {
-        setlayerSelectId(item.id);
-        // toggleModal();
-      }}
-      onPress={() => {
-        toggleLayerVisibility(item.id);
-      }}
-      style={{
-        flex: 1,
-      }}
-    >
-      <View style={[
-        styles.layerContainer,
-        item.id === layerSelectId ? { backgroundColor: 'rgba(0,0,0,0.3)' } : {},
-        !item.visible ? { opacity: 0.2 } : {} // Apply opacity if the layer is not visible
-      ]}>
-        <Text style={item.id === props.layerEditId ? { fontWeight: 'bold' } : {}}>
-          {item.name}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
 
   useEffect(() => {
     Animated.timing(translateX, {
@@ -74,10 +36,17 @@ export default function Sidebar(props) {
       duration: 100,
       useNativeDriver: true,
     }).start();
-  }, [props.open]);
 
-  const [modalVisible, setModalVisible] = useState(false);
+    const checkSavedFile = async () => {
+      const directories = await FileSystem.readDirectoryAsync(FileSystem.documentDirectory);
+      if (directories.find((dir) => dir === "recordedPath.json")) {
+        setHasSavedFile(true);
+      }
+      else setHasSavedFile(false);
+    }
 
+    checkSavedFile();
+  }, [props.open, hasSavedFile]);
 
   return (
     <TouchableWithoutFeedback onPressIn={() => { }}>
@@ -89,63 +58,43 @@ export default function Sidebar(props) {
         height: '100%',
         width: '40%'
       }}>
-        <View>
-          <TouchableOpacity style={{ margin: 50 }} onPress={() => setModalVisible(!modalVisible)}>
-            <Text>Exportar</Text>
+        <View style={styles.sideBarWrapper}>
+          <TouchableOpacity
+            style={styles.sideBarTouchable}
+            onPress={async () => {
+              const jsonData = JSON.stringify(props.geoJson)
+              let kmlData = await translate.GeoJSON2KML(jsonData);
+              let fileUri = await downloadKML(kmlData, "titulo" + ".kml") // lembrar de colocar o titulo no lugar do text
+              await shareFile(fileUri)
+            }}
+          >
+            <FontAwesomeI name="export" size={25} color="black" />
+            <Text style={styles.sideBarText}>Exportar KML</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{ margin: 50 }} onPress={() => { }}>
-            <Text>Importar</Text>
+          <TouchableOpacity
+            style={styles.sideBarTouchable}
+            onPress={async () => {
+              let fileKML = await getLocalFile();
+              let fileGeoJSON = await translate.KML2GeoJSON(fileKML);
+              props.setGeoJson(fileGeoJSON)
+            }}
+          >
+            <FontAwesomeI name="import" size={25} color="black" />
+            <Text style={styles.sideBarText}>Importar KML</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{ margin: 50 }} onPress={handleLayerAdd}>
-            <Text>Add Layer</Text>
+          <TouchableOpacity
+            style={hasSavedFile ? styles.sideBarTouchable : styles.sideBarTouchableDisabled}
+            disabled={!hasSavedFile}
+            onPress={async () => {
+              console.log(has)
+              await shareFile(FileSystem.documentDirectory + "recordedPath")
+            }}
+          >
+            <FontAwesomeI name="map-marker-path" size={25} color="black" />
+            <Text style={styles.sideBarText}>Exportar Caminho Gravado</Text>
           </TouchableOpacity>
-          <FlatList
-            data={props.layers}
-            renderItem={renderLayer}
-            onBackButtonPress={() => { }}
-          // keyExtractor={item => item.id.toString()}
-          />
         </View>
-        <Export
-          modalVisible={modalVisible}
-          setModalVisible={setModalVisible}
-          setGeoJson={props.setGeoJson} 
-          geoJson={props.geoJson} 
-        />
       </Animated.View>
     </TouchableWithoutFeedback>
   );
 }
-
-const styles = {
-  layerContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 10,
-    borderWidth: 1,
-    borderRadius: 5,
-    margin: 5,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
-  },
-  modalContent: {
-    width: '80%',
-    padding: 20,
-    borderRadius: 10,
-    backgroundColor: 'blue', // Modal content background
-    alignItems: 'center',
-  },
-  option: {
-    padding: 10,
-    backgroundColor: 'blue',
-    borderRadius: 5,
-  },
-  optionText: {
-    color: 'white',
-  },
-};
