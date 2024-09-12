@@ -23,7 +23,7 @@ export default function Map(props) {
   const [location, setLocation] = useState({ latitude: -22.9, longitude: -43.2, latitudeDelta: 0.0922, longitudeDelta: 0.0421 });
 
   const [isRecording, setIsRecording] = useState(false);
-  const [recordedCoordinates, setRecordedCoordinates] = useState([]);
+  const [recordedCoordinates, setRecordedCoordinates] = useState([0.0,0.0,0.0]);
   const [hasSavedFile, setHasSavedFile] = useState(false);
 
   const [polylines, setPolylines] = useState([]);
@@ -102,7 +102,9 @@ export default function Map(props) {
       }
 
       const location = await Location.getCurrentPositionAsync({});
-      coordinates = [location.coords.longitude, location.coords.latitude];
+      // louco = [0.0,0.0,0.0]
+      // setRecordedCoordinates((prevState) => [...prevState, louco]);
+      coordinates = [location.coords.longitude.toFixed(4), location.coords.latitude.toFixed(4),0];
 
       setRecordedCoordinates((prevState) => [...prevState, coordinates]);
 
@@ -174,7 +176,7 @@ export default function Map(props) {
         {polylines.map((polyline, index) => (
           <Polyline key={index} coordinates={polyline} strokeColor="red" strokeWidth={2} />
         ))}
-        <Polyline coordinates={recordedCoordinates} strokeColor="red" strokeWidth={5} />
+        {/* <Polyline coordinates={recordedCoordinates} strokeColor="red" strokeWidth={5} /> */}
         <Geojson
           geojson={props.geoJson}
           tracksViewChanges={true}

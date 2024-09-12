@@ -38,3 +38,12 @@ export const updateGeoJsonFromDrawing = (geoJson,lines) => {
     geoJson.features.push(newFeature);
     return geoJson;
 }
+
+
+export const exportKML = async (geoJson) => {
+    const jsonData = JSON.stringify(geoJson)
+    console.log(geoJson)
+    let kmlData = await translate.GeoJSON2KML(jsonData);
+    let fileUri = await downloadKML(kmlData, fileName + ".kml") 
+    await shareFile(fileUri)
+}

@@ -9,7 +9,9 @@ import { TouchableOpacity } from 'react-native';
 import FontAwesomeI from 'react-native-vector-icons/MaterialCommunityIcons'
 import * as FileSystem from 'expo-file-system';
 
-import { getLocalFile, shareFile, downloadKML } from './LocalFiles';
+import { getLocalFile, shareFile, downloadKML,readLocationFile } from './LocalFiles';
+
+
 import * as translate from './GeoDocs';
 import { styles } from './styles';
 import { GlobalStateContext } from './Context';
@@ -93,8 +95,10 @@ export default function Sidebar(props) {
             style={hasSavedFile ? styles.sideBarTouchable : styles.sideBarTouchableDisabled}
             disabled={!hasSavedFile}
             onPress={async () => {
-              console.log(has)
-              await shareFile(FileSystem.documentDirectory + "recordedPath")
+              const jsonData = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + "recordedPath.json");
+              let kmlData = await translate.GeoJSON2KML(jsonData);
+              let fileUri = await downloadKML(kmlData,"recordedPath.kml") 
+              await shareFile(fileUri)
             }}
           >
             <FontAwesomeI name="map-marker-path" size={25} color="black" />

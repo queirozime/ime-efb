@@ -24,10 +24,10 @@ export async function saveLocation(location, timestamp) {
   }
 }
 
-export async function readLocationFile() {
+export async function readLocationFile(title) {
   try {
     // get list of entries in FileSystem.documentDirectory/flights
-    const content = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + '/flights/');
+    const content = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + title);
     console.log(content);
   } catch (error) {
     console.error(error);
