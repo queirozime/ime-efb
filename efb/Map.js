@@ -23,7 +23,7 @@ export default function Map(props) {
   const [location, setLocation] = useState({ latitude: -22.9, longitude: -43.2, latitudeDelta: 0.0922, longitudeDelta: 0.0421 });
 
   const [isRecording, setIsRecording] = useState(false);
-  const [recordedCoordinates, setRecordedCoordinates] = useState([0.0,0.0,0.0]);
+  const [recordedCoordinates, setRecordedCoordinates] = useState([0.0, 0.0, 0.0]);
   const [hasSavedFile, setHasSavedFile] = useState(false);
 
   const [polylines, setPolylines] = useState([]);
@@ -104,7 +104,7 @@ export default function Map(props) {
       const location = await Location.getCurrentPositionAsync({});
       // louco = [0.0,0.0,0.0]
       // setRecordedCoordinates((prevState) => [...prevState, louco]);
-      coordinates = [location.coords.longitude.toFixed(4), location.coords.latitude.toFixed(4),0];
+      coordinates = [location.coords.longitude.toFixed(4), location.coords.latitude.toFixed(4), 0];
 
       setRecordedCoordinates((prevState) => [...prevState, coordinates]);
 
@@ -172,7 +172,7 @@ export default function Map(props) {
         onTouchEnd={handleTouchEnd}
         onRegionChange={() => { setIsFollowingUser(false) }}
       >
-        <UrlTile urlTemplate={'http://192.168.0.42:5000/{z}/{x}/{y}.png'} shouldReplaceMapContent={false} />
+        <UrlTile urlTemplate={'http://3.141.195.194:5000/{z}/{x}/{y}.png'} shouldReplaceMapContent={false} />
         {polylines.map((polyline, index) => (
           <Polyline key={index} coordinates={polyline} strokeColor="red" strokeWidth={2} />
         ))}
