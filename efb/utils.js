@@ -8,7 +8,10 @@ export const buildGeoJsonFromCoordinates = (coordinates) => {
                     "type": "LineString",
                     "coordinates": coordinates
                 },
-                "properties": {}
+                "properties": {
+                  "stroke": "rgba(6, 245, 66, 1)",
+                  "stroke-width": 5,
+                }
             }
         ]
     }
@@ -16,7 +19,7 @@ export const buildGeoJsonFromCoordinates = (coordinates) => {
 
 const lineToGeoJson = (lines, enclosed) => {
   coords = lines.coords;
-  console.log("coords", coords);
+  console.log(lines.strokeColor);
   const newLine = {
     "type": "Feature",
     "geometry": {
@@ -29,6 +32,7 @@ const lineToGeoJson = (lines, enclosed) => {
       "fill": lines.fillColor,
     },
   };
+  console.log(newLine);
 
   coords.forEach(line => {
     let arrayLine = [line.longitude.toFixed(4),line.latitude.toFixed(4),"0"]
@@ -60,7 +64,6 @@ const circleToGeoJson = (circle) => {
       "fill": circle.fillColor,
     },
   };
-  console.log("newCircle", newCircle);
   return newCircle
 }
 

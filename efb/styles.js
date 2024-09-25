@@ -1,4 +1,10 @@
 export const styles = {
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     sideBarTouchable: {
         margin: 5,
         marginTop: 50,
@@ -52,7 +58,7 @@ export const styles = {
         display: 'flex',
     },
     modalContent: {
-        width: '70%',
+        width: '50%',
         padding: 20,
         borderRadius: 10,
         backgroundColor: 'white',
@@ -96,17 +102,27 @@ export const styles = {
         bottom: 110,
         right: 30,
         display: 'flex',
-    },
+        position: 'absolute',
+    },  
     drawCircleButton: {
         backgroundColor: 'white',
         bottom: 190,
         right: 30,
         display: 'flex',
+        position: 'absolute',
     },
     drawPolygonButton: {
         backgroundColor: 'white',
         bottom: 270,
         right: 30,
         display: 'flex',
+        position: 'absolute',
+    },
+    colorPickerButton: {
+        backgroundColor: 'white',
+        bottom: 30,
+        right: 110,
+        display: 'flex',
+        position: 'absolute',
     },
 }

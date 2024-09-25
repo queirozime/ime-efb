@@ -14,8 +14,7 @@ const ExportFileButton = (props) => {
     if (fileName.trim() === '') {
       Alert.alert('Erro', 'O nome do arquivo não pode estar vazio!');
     } else {
-      try{
-        
+      try {
         const jsonData = JSON.stringify(props.geoJson)
         let kmlData = await translate.GeoJSON2KML(jsonData);
         let fileUri = await downloadKML(kmlData, fileName + ".kml") 
