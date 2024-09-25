@@ -13,7 +13,7 @@ const MapLayerValue = (props) => {
 
   const getLayerValues = async () => {
     try {
-      const response = await fetch('http://172.15.6.130:5000/layers');
+      const response = await fetch('http://172.31.35.92:5000/layers');
       const data = await response.json();
       setLayerValues(data);
     } catch (error) {
@@ -23,7 +23,6 @@ const MapLayerValue = (props) => {
 
   useEffect(() => {
     getLayerValues();
-    console.log(layerValues);
   }, []);
 
   return (

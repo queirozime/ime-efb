@@ -1,20 +1,20 @@
 export const buildGeoJsonFromCoordinates = (coordinates) => {
-    return {
-        "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "LineString",
-                    "coordinates": coordinates
-                },
-                "properties": {
-                  "stroke": "rgba(6, 245, 66, 1)",
-                  "stroke-width": 5,
-                }
-            }
-        ]
-    }
+  return {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": coordinates
+        },
+        "properties": {
+          "stroke": "rgba(6, 245, 66, 1)",
+          "stroke-width": 5,
+        }
+      }
+    ]
+  }
 }
 
 const lineToGeoJson = (lines, enclosed) => {
@@ -33,10 +33,10 @@ const lineToGeoJson = (lines, enclosed) => {
   };
 
   coords.forEach(line => {
-    let arrayLine = [line.longitude.toFixed(4),line.latitude.toFixed(4),"0"]
+    let arrayLine = [line.longitude.toFixed(4), line.latitude.toFixed(4), "0"]
     newLine.geometry.coordinates.push(arrayLine)
   });
-      
+
   if (enclosed) {
     newLine.geometry.type = "Polygon"
     newLine.geometry.coordinates = [newLine.geometry.coordinates]
@@ -47,7 +47,7 @@ const lineToGeoJson = (lines, enclosed) => {
 
 const circleToGeoJson = (circle) => {
   const circleToPolygon = require('circle-to-polygon');
-  let polygonCoords = circleToPolygon([circle.center.longitude, circle.center.latitude], circle.radius, {numberOfEdges: 64});
+  let polygonCoords = circleToPolygon([circle.center.longitude, circle.center.latitude], circle.radius, { numberOfEdges: 64 });
   const newCircle = {
     "type": "Feature",
     "geometry": {
@@ -71,7 +71,7 @@ export const updateGeoJsonFromDrawing = (geoJson, type, object) => {
     newFeature = lineToGeoJson(object, false);
   } else if (type == "circle") {
     newFeature = circleToGeoJson(object);
-  } else if(type == "polygon") {
+  } else if (type == "polygon") {
     newFeature = lineToGeoJson(object, true);
   } else {
     console.log("Unsuported type");
@@ -83,9 +83,8 @@ export const updateGeoJsonFromDrawing = (geoJson, type, object) => {
 
 
 export const exportKML = async (geoJson) => {
-    const jsonData = JSON.stringify(geoJson)
-    console.log(geoJson)
-    let kmlData = await translate.GeoJSON2KML(jsonData);
-    let fileUri = await downloadKML(kmlData, fileName + ".kml") 
-    await shareFile(fileUri)
+  const jsonData = JSON.stringify(geoJson)
+  let kmlData = await translate.GeoJSON2KML(jsonData);
+  let fileUri = await downloadKML(kmlData, fileName + ".kml")
+  await shareFile(fileUri)
 }

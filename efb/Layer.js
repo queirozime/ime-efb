@@ -32,13 +32,10 @@ export default function Layer(props) {
 
   function onTouchEnd(eventDetails) {
     savePolyline();
-    console.log(polylines.length);
   }
 
   useEffect(() => {
-    // console.log("Edit ID:", props.layerEditId, "ID:", props.id);
     if (props.layerEditId === props.id && props.isDrawing) {
-      console.log(props.action);
       switch (props.action) {
         case "none":
           break;

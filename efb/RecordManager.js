@@ -42,7 +42,6 @@ export default function RecordManager(props) {
                                         await FileSystem.deleteAsync(FileSystem.documentDirectory + "recordedPath.json");
                                         props.setHasSavedFile(false);
                                         props.setModalVisible(false);
-                                        console.log(await FileSystem.readDirectoryAsync(FileSystem.documentDirectory));
                                     }}
                                 >
                                     <Text>Sim</Text>
