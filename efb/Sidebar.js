@@ -9,7 +9,7 @@ import { TouchableOpacity } from 'react-native';
 import FontAwesomeI from 'react-native-vector-icons/MaterialCommunityIcons'
 import * as FileSystem from 'expo-file-system';
 
-import { getLocalFile, shareFile, downloadKML,readLocationFile } from './LocalFiles';
+import { getLocalFile, shareFile, downloadKML, readLocationFile } from './LocalFiles';
 
 
 import * as translate from './GeoDocs';
@@ -97,12 +97,19 @@ export default function Sidebar(props) {
             onPress={async () => {
               const jsonData = await FileSystem.readAsStringAsync(FileSystem.documentDirectory + "recordedPath.json");
               let kmlData = await translate.GeoJSON2KML(jsonData);
-              let fileUri = await downloadKML(kmlData,"recordedPath.kml") 
+              let fileUri = await downloadKML(kmlData, "recordedPath.kml")
               await shareFile(fileUri)
             }}
           >
             <FontAwesomeI name="map-marker-path" size={25} color="black" />
             <Text style={styles.sideBarText}>Exportar Caminho Gravado</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sideBarTouchable}
+            onPress={() => props.setLayerModalVisible(true)}
+          >
+            <FontAwesomeI name="import" size={25} color="black" />
+            <Text style={styles.sideBarText}>Alternar camada</Text>
           </TouchableOpacity>
         </View>
       </Animated.View>
