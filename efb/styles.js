@@ -96,17 +96,27 @@ export const styles = {
         bottom: 110,
         right: 30,
         display: 'flex',
-    },
+        position: 'absolute',
+    },  
     drawCircleButton: {
         backgroundColor: 'white',
         bottom: 190,
         right: 30,
         display: 'flex',
+        position: 'absolute',
     },
     drawPolygonButton: {
         backgroundColor: 'white',
         bottom: 270,
         right: 30,
         display: 'flex',
+        position: 'absolute',
+    },
+    colorPickerButton: {
+        backgroundColor: 'white',
+        bottom: 30,
+        right: 110,
+        display: 'flex',
+        position: 'absolute',
     },
 }

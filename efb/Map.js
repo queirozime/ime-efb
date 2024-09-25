@@ -1,16 +1,17 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity } from 'react-native';
-import { UrlTile } from 'react-native-maps';
 import * as Location from "expo-location";
-import { Polyline, Circle, Polygon } from 'react-native-maps';
+import { UrlTile, Geojson, Polyline, Circle, Polygon } from 'react-native-maps';
+import MapView from 'react-native-maps';
 import * as FileSystem from 'expo-file-system';
-import MapView, { Geojson } from 'react-native-maps';
 import FontAwesomeI from 'react-native-vector-icons/FontAwesome'
 import FontAwesome5I from 'react-native-vector-icons/FontAwesome5'
 import MaterialCommunityIconsI from 'react-native-vector-icons/MaterialCommunityIcons'
+import ColorPicker, { Panel1, Swatches, Preview, OpacitySlider, HueSlider } from 'reanimated-color-picker';
 
 import { buildGeoJsonFromCoordinates, updateGeoJsonFromDrawing } from './utils';
 import RecordManager from './RecordManager';
+import DrawColorPicker from './DrawColorPicker';
 import { styles } from './styles';
 import { GlobalStateContext } from './Context';
 
@@ -35,6 +36,11 @@ export default function Map(props) {
   const [drawWidth, setDrawWidth] = useState(2);
   const [fillColor, setFillColor] = useState(addOpacityToColor(drawColor, 0.3));
 
+  const handleColorChange = (color) => {
+    setDrawColor(color.rgb);
+    setFillColor(addOpacityToColor(color.rgb, 0.3));
+  }
+
   const [polylines, setPolylines] = useState([]);
   const [polyline, setPolyline] = useState({});
 
@@ -49,8 +55,8 @@ export default function Map(props) {
   
   const [markers, setMarkers] = useState([]);
 
-
   const [recordManagerModalOpen, setRecordManagerModalOpen] = useState(false);
+  const [colorModalOpen, setColorModalOpen] = useState(false);
 
   const intervalRef = useRef(null);
 
@@ -220,6 +226,10 @@ export default function Map(props) {
     setIsDrawingPolygon(!isDrawingPolygon);
   }
 
+  const handleToggleColorPicker = () => {
+    setColorModalOpen(!colorModalOpen);
+  }
+
   useEffect(() => {
     const checkExistingFile = async () => {
       const { exists } = await FileSystem.getInfoAsync(FileSystem.documentDirectory + "recordedPath.json");
@@ -233,8 +243,12 @@ export default function Map(props) {
     return !isDrawing && !isDrawingCircle && !isDrawingPolygon;
   }
 
+
+
   return (
-    <View>
+    <View
+      style={styles.container}
+      >
       <MapView
         style={styles.mapView}
         followsUserLocation={isFollowingUser}
@@ -258,9 +272,8 @@ export default function Map(props) {
         />
       </MapView>
       <TouchableOpacity
-        onPress={() => {
-          handleToggleDrawing();
-        }}
+        onPress={handleToggleDrawing}
+        onLongPress={handleToggleColorPicker}
         style={[
           styles.circleButton,
           styles.pencilButton,
@@ -286,6 +299,7 @@ export default function Map(props) {
       </TouchableOpacity>
       <TouchableOpacity
         onPress={handleCircleDrawing}
+        onLongPress={handleToggleColorPicker}
         style={[
           styles.circleButton,
           styles.drawCircleButton,
@@ -295,10 +309,11 @@ export default function Map(props) {
           }
         ]}
       >
-        <MaterialCommunityIconsI name="radius-outline" size={50} color={isDrawingCircle ? "white" : "gray"} />
+        <MaterialCommunityIconsI name="radius-outline" size={45} color={isDrawingCircle ? "white" : "gray"} />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={handlePolygonDrawing}
+        onLongPress={handleToggleColorPicker}
         style={[
           styles.circleButton,
           styles.drawPolygonButton,
@@ -308,12 +323,28 @@ export default function Map(props) {
           }
         ]}
       >
-        <FontAwesome5I name="draw-polygon" size={50} color={isDrawingPolygon ? "white" : "gray"} />
+        <FontAwesome5I name="draw-polygon" size={40} color={isDrawingPolygon ? "white" : "gray"} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={handleToggleColorPicker}
+        style={[
+          styles.circleButton,
+          styles.colorPickerButton,
+          {backgroundColor: drawColor}
+        ]}
+      > 
+        <MaterialCommunityIconsI name="palette-outline" size={30} color='black' position='absolute' />
       </TouchableOpacity>
       <RecordManager
         modalVisible={recordManagerModalOpen}
         setModalVisible={setRecordManagerModalOpen}
         setHasSavedFile={setHasSavedFile}
+      />
+      <DrawColorPicker
+        modalVisible={colorModalOpen}
+        setModalVisible={setColorModalOpen}
+        onSelectColor={handleColorChange}
+        currentColor={drawColor}
       />
     </View>
   );
