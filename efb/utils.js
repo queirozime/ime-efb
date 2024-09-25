@@ -14,29 +14,70 @@ export const buildGeoJsonFromCoordinates = (coordinates) => {
     }
 }
 
-const lineToGeoJson = (lines) =>{
-    const newLine = {
-        "type": "Feature",
-        "geometry": {
-          "type": "LineString",
-          "coordinates":[]
-        },
-        "properties": {
-          "name": "Drawn"
-        }
-     };
-    lines.forEach(line => {
-        let arrayLine = [line.longitude.toFixed(4),line.latitude.toFixed(4),"0"]
-        newLine.geometry.coordinates.push(arrayLine)
-    });
-    return newLine
+const lineToGeoJson = (lines, enclosed) => {
+  coords = lines.coords;
+  console.log("coords", coords);
+  const newLine = {
+    "type": "Feature",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": []
+    },
+    "properties": {
+      "stroke": lines.strokeColor,
+      "stroke-width": lines.strokeWidth,
+      "fill": lines.fillColor,
+    },
+  };
+
+  coords.forEach(line => {
+    let arrayLine = [line.longitude.toFixed(4),line.latitude.toFixed(4),"0"]
+    newLine.geometry.coordinates.push(arrayLine)
+  });
+      
+  if (enclosed) {
+    newLine.geometry.type = "Polygon"
+    newLine.geometry.coordinates = [newLine.geometry.coordinates]
+  }
+
+  return newLine
 }
 
-export const updateGeoJsonFromDrawing = (geoJson,lines) => {
+const circleToGeoJson = (circle) => {
+  const circleToPolygon = require('circle-to-polygon');
+  let polygonCoords = circleToPolygon([circle.center.longitude, circle.center.latitude], circle.radius, {numberOfEdges: 64});
+  const newCircle = {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": polygonCoords.coordinates
+    },
+    "properties": {
+      "subtype": "circle",     // not used, only if we want to override in the future
+      "radius": circle.radius, // not used
+      "stroke": circle.strokeColor,
+      "stroke-width": circle.strokeWidth,
+      "fill": circle.fillColor,
+    },
+  };
+  console.log("newCircle", newCircle);
+  return newCircle
+}
 
-    let newFeature = lineToGeoJson(lines);
-    geoJson.features.push(newFeature);
+export const updateGeoJsonFromDrawing = (geoJson, type, object) => {
+  let newFeature = {};
+  if (type == "polyline") {
+    newFeature = lineToGeoJson(object, false);
+  } else if (type == "circle") {
+    newFeature = circleToGeoJson(object);
+  } else if(type == "polygon") {
+    newFeature = lineToGeoJson(object, true);
+  } else {
+    console.log("Unsuported type");
     return geoJson;
+  }
+  geoJson.features.push(newFeature);
+  return geoJson;
 }
 
 
