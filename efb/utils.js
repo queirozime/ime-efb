@@ -19,7 +19,6 @@ export const buildGeoJsonFromCoordinates = (coordinates) => {
 
 const lineToGeoJson = (lines, enclosed) => {
   coords = lines.coords;
-  console.log(lines.strokeColor);
   const newLine = {
     "type": "Feature",
     "geometry": {
@@ -32,7 +31,6 @@ const lineToGeoJson = (lines, enclosed) => {
       "fill": lines.fillColor,
     },
   };
-  console.log(newLine);
 
   coords.forEach(line => {
     let arrayLine = [line.longitude.toFixed(4),line.latitude.toFixed(4),"0"]

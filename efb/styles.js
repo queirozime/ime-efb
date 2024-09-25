@@ -1,10 +1,4 @@
 export const styles = {
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
     sideBarTouchable: {
         margin: 5,
         marginTop: 50,
