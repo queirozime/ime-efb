@@ -58,7 +58,7 @@ export const styles = {
         display: 'flex',
     },
     modalContent: {
-        width: '50%',
+        width: '70%',
         padding: 20,
         borderRadius: 10,
         backgroundColor: 'white',

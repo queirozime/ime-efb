@@ -23,7 +23,7 @@ export default function DrawColorPicker(props) {
           <TouchableWithoutFeedback
             style={styles.option}
           >
-            <View style={[styles.modalContent, {backgroundColor: 'transparent'}]}>
+            <View style={[styles.modalContent, {backgroundColor: 'transparent', width: '50%'}]}>
             <ColorPicker style={{ width: '100%' }} value={props.currentColor} onComplete={props.onSelectColor}>
               <Preview hideInitialColor={true}/>
               <Panel3 />
