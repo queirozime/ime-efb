@@ -1,13 +1,16 @@
 import { StyleSheet, View, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 
 import Icon from 'react-native-vector-icons/FontAwesome'
 
 import Map from './Map';
 import Sidebar from './Sidebar';
 import { Animated } from 'react-native';
-import ExportFileButton from './ButtonExport'
+import ExportFileButton from './ButtonExport';
+import MapLayerValue from './MapLayerValue';
 import { GlobalStateProvider } from './Context';
+import { GlobalStateContext } from './Context';
+
 
 
 export default function App() {
@@ -19,6 +22,7 @@ export default function App() {
   })
   const [modalExportVisible, setModalExportVisible] = useState(false);
 
+  const [isSelectLayerValueOpen, setIsSelectLayerValueOpen] = useState(false);
 
   const [opacity] = useState(new Animated.Value(0));
   useEffect(() => {
@@ -70,13 +74,17 @@ export default function App() {
             geoJson={geoJson}
             modalVisible={modalExportVisible}
             setModalVisible={setModalExportVisible}
+            setLayerModalVisible={setIsSelectLayerValueOpen}
           />
           <ExportFileButton
             geoJson={geoJson}
             modalVisible={modalExportVisible}
             setModalVisible={setModalExportVisible}
           />
-
+          <MapLayerValue
+            modalVisible={isSelectLayerValueOpen}
+            setModalVisible={setIsSelectLayerValueOpen}
+          />
         </View>
       </TouchableWithoutFeedback>
     </GlobalStateProvider>

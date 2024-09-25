@@ -16,7 +16,15 @@ import { GlobalStateContext } from './Context';
 
 export default function Map(props) {
 
-  const { isDrawing, setIsDrawing, isDrawingCircle, setIsDrawingCircle, isDrawingPolygon, setIsDrawingPolygon } = useContext(GlobalStateContext);
+  const {
+    isDrawing,
+    setIsDrawing,
+    isDrawingCircle,
+    setIsDrawingCircle,
+    isDrawingPolygon,
+    setIsDrawingPolygon,
+    mapLayerValue,
+  } = useContext(GlobalStateContext);
 
   const [isFollowingUser, setIsFollowingUser] = useState(true);
   const [location, setLocation] = useState({ latitude: -22.9, longitude: -43.2, latitudeDelta: 0.0922, longitudeDelta: 0.0421 });
@@ -46,7 +54,7 @@ export default function Map(props) {
 
   const [lines, setLines] = useState([]);
   const [line, setLine] = useState({});
-  
+
   const [markers, setMarkers] = useState([]);
 
 
@@ -69,7 +77,7 @@ export default function Map(props) {
       let updatedGeoJson = updateGeoJsonFromDrawing(props.geoJson, "polygon", polygon);
       props.setGeoJson(updatedGeoJson);
     }
-    setPolygon({}); 
+    setPolygon({});
   }
 
   const saveCircle = () => {
@@ -80,7 +88,7 @@ export default function Map(props) {
     }
     setCircle({});
   }
-  
+
   function getDistanceHaversine(coord1, coord2) {
     const R = 6371e3;
     const lat1 = coord1.latitude * Math.PI / 180;
@@ -102,7 +110,7 @@ export default function Map(props) {
     if (isDrawing) {
       setPolyline({ coords: [coordinate], strokeColor: drawColor, strokeWidth: drawWidth });
     } else if (isDrawingCircle) {
-      setCircle({ center: coordinate, radius: 0, strokeColor: drawColor, strokeWidth: drawWidth, fillColor: fillColor }); 
+      setCircle({ center: coordinate, radius: 0, strokeColor: drawColor, strokeWidth: drawWidth, fillColor: fillColor });
     } else if (isDrawingPolygon) {
       setPolygon({ coords: [coordinate], strokeColor: drawColor, strokeWidth: drawWidth, fillColor: fillColor });
     }
@@ -110,18 +118,18 @@ export default function Map(props) {
 
   function onTouchMove(coordinate) {
     if (isDrawing)
-      setPolyline((prevPolyline) => ({...prevPolyline, coords: [...prevPolyline.coords, coordinate]}));
+      setPolyline((prevPolyline) => ({ ...prevPolyline, coords: [...prevPolyline.coords, coordinate] }));
     else if (isDrawingCircle) {
-      let radius = getDistanceHaversine( circle.center, coordinate );
-      setCircle((prevCircle) => ({...prevCircle, radius: radius}));
+      let radius = getDistanceHaversine(circle.center, coordinate);
+      setCircle((prevCircle) => ({ ...prevCircle, radius: radius }));
     } else if (isDrawingPolygon)
-      setPolygon((prevPolygon) => ({...prevPolygon, coords: [...prevPolygon.coords, coordinate]}));
+      setPolygon((prevPolygon) => ({ ...prevPolygon, coords: [...prevPolygon.coords, coordinate] }));
   }
 
   function onTouchEnd(eventDetails) {
     if (isDrawing)
       savePolyline();
-    else if(isDrawingCircle)
+    else if (isDrawingCircle)
       saveCircle();
     else if (isDrawingPolygon)
       savePolygon();
@@ -227,7 +235,7 @@ export default function Map(props) {
     };
 
     checkExistingFile();
-  }, [hasSavedFile, isDrawing]);
+  }, [hasSavedFile, isDrawing, mapLayerValue]);
 
   const shouldScrollMap = () => {
     return !isDrawing && !isDrawingCircle && !isDrawingPolygon;
@@ -246,9 +254,9 @@ export default function Map(props) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onRegionChange={() => {setIsFollowingUser(false)}}
+        onRegionChange={() => { setIsFollowingUser(false) }}
       >
-        <UrlTile urlTemplate={'http://3.141.195.194:5000/{z}/{x}/{y}.png'} shouldReplaceMapContent={false} />
+        <UrlTile urlTemplate={`http:///3.141.195.194:5000/{z}/{x}/{y}?&layer=${mapLayerValue}`} shouldReplaceMapContent={false} />
         {polyline.coords && polyline.coords.length > 1 && <Polyline coordinates={polyline.coords} strokeColor={drawColor} strokeWidth={drawWidth} />}
         {polygon.coords && polygon.coords.length > 1 && <Polygon coordinates={polygon.coords} strokeColor={drawColor} strokeWidth={drawWidth} fillColor={fillColor} />}
         {circle.radius > 0 && <Circle center={circle.center} radius={circle.radius} strokeColor={drawColor} strokeWidth={drawWidth} fillColor={fillColor} />}
@@ -308,7 +316,7 @@ export default function Map(props) {
           }
         ]}
       >
-        <FontAwesome5I name="draw-polygon" size={50} color={isDrawingPolygon ? "white" : "gray"} />
+        <FontAwesome5I name="draw-polygon" size={40} color={isDrawingPolygon ? "white" : "gray"} />
       </TouchableOpacity>
       <RecordManager
         modalVisible={recordManagerModalOpen}

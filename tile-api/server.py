@@ -1,9 +1,12 @@
-from flask import Flask, send_file, abort
+from flask import Flask, send_file, abort, request
 import math
 import requests
 import os
 from PIL import Image
 from io import BytesIO
+import xml.etree.ElementTree as ET
+import json
+
 
 app = Flask(__name__)
 
@@ -22,6 +25,7 @@ def download_file(file_path):
 @app.route('/<path:file_path>', methods=['GET'])
 def request_tile(file_path):
     string = file_path.replace('.png', '')
+    layer = request.args.get('layer')
     
     values = string.split('/')
     z = int(values[0])
@@ -50,7 +54,7 @@ def request_tile(file_path):
         url_template = (
             "https://bdgex.eb.mil.br/mapcache?"
             "SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1"
-            "&LAYERS=rapideye"
+            f"&LAYERS={layer or 'ctm250'}"
             "&STYLES="
             "&SRS=EPSG:4326"
             f"&BBOX={bbox}"
@@ -78,6 +82,23 @@ def request_tile(file_path):
             print(f"Failed to retrieve map tile: {response.status_code}")
 
     return fetch_wms_tile(x, y, z)  
+    
+@app.route('/layers', methods=['GET'])
+def getLayers():
+    url = "https://bdgex.eb.mil.br/mapcache?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.1.1"
+    response = requests.get(url)
+    if response.status_code == 200:
+        root = ET.fromstring(response.text)
+        layers_list = []
+        for tileset in root.findall(".//TileSet"):
+            layers = tileset.find("Layers")
+            srs = tileset.find("SRS")
+            if layers is not None and srs is not None:
+                layers_list.append({"name": layers.text, "srs": srs.text})
+
+        return json.dumps(layers_list)
+    else:
+        abort(500, description="Failed to retrieve layers")
     
     
 if __name__ == '__main__':
