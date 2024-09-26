@@ -13,7 +13,7 @@ const MapLayerValue = (props) => {
 
   const getLayerValues = async () => {
     try {
-      const response = await fetch('http://172.31.35.92:5000/layers');
+      const response = await fetch('http://3.141.195.194:5000/layers');
       const data = await response.json();
       setLayerValues(data);
     } catch (error) {
@@ -45,6 +45,7 @@ const MapLayerValue = (props) => {
             {layerValues?.map((layer) => (
               <TouchableOpacity
                 style={styles.button}
+                key={layer.name}
                 onPress={() => {
                   setMapLayerValue(layer.name);
                   props.setModalVisible(!props.modalVisible);

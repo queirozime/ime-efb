@@ -270,13 +270,21 @@ export default function Map(props) {
         onTouchEnd={handleTouchEnd}
         onRegionChange={() => { setIsFollowingUser(false) }}
       >
-        <UrlTile urlTemplate={`http://172.31.35.92:5000/{z}/{x}/{y}?&layer=${mapLayerValue}`} shouldReplaceMapContent={false} />
-        {polyline.coords && polyline.coords.length > 1 && <Polyline coordinates={polyline.coords} strokeColor={drawColor} strokeWidth={drawWidth} />}
-        {polygon.coords && polygon.coords.length > 1 && <Polygon coordinates={polygon.coords} strokeColor={drawColor} strokeWidth={drawWidth} fillColor={fillColor} />}
-        {circle.radius > 0 && <Circle center={circle.center} radius={circle.radius} strokeColor={drawColor} strokeWidth={drawWidth} fillColor={fillColor} />}
+      
+        <UrlTile urlTemplate={`http://3.141.195.194:5000/{z}/{x}/{y}?&layer=${mapLayerValue}`} shouldReplaceMapContent={false} 
+          zIndex={0}
+          key={`url-${mapLayerValue}`}
+         />
+        {polyline.coords && polyline.coords.length > 1 && <Polyline coordinates={polyline.coords} strokeColor={drawColor} strokeWidth={drawWidth} key={`geojson-${mapLayerValue}-${polyline.coords}`}
+          zIndex={1}
+        />}
+        {polygon.coords && polygon.coords.length > 1 && <Polygon coordinates={polygon.coords} strokeColor={drawColor} strokeWidth={drawWidth} fillColor={fillColor} key={`gon-${mapLayerValue}-${polygon.coords}`}  zIndex={1}/>}
+        {circle.radius > 0 && <Circle center={circle.center} radius={circle.radius} strokeColor={drawColor} strokeWidth={drawWidth} fillColor={fillColor} key={`circle-${mapLayerValue}-${circle.center}`}  zIndex={1}/>}
         <Geojson
           geojson={props.geoJson}
           tracksViewChanges={true}
+          key={`geojson-${mapLayerValue}`}
+          zIndex={1}
         />
       </MapView>
       <TouchableOpacity
