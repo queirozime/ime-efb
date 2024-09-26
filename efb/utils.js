@@ -29,6 +29,7 @@ const lineToGeoJson = (lines, enclosed) => {
       "stroke": lines.strokeColor,
       "stroke-width": lines.strokeWidth,
       "fill": lines.fillColor,
+      "id": lines.id,
     },
   };
 
@@ -60,6 +61,7 @@ const circleToGeoJson = (circle) => {
       "stroke": circle.strokeColor,
       "stroke-width": circle.strokeWidth,
       "fill": circle.fillColor,
+      "id": circle.id,
     },
   };
   return newCircle
@@ -110,6 +112,16 @@ export const removePolygonsAndLineStrings = (geoJson, setGeoJson) => {
     ...geoJson,
     features: geoJson.features.filter((feature) =>
       feature.geometry.type !== "Polygon" && feature.geometry.type !== "LineString"
+    )
+  }
+  setGeoJson(filteredGeoJson)
+}
+
+export const removeFromGeoJsonById = (geoJson, setGeoJson, id) => {
+  const filteredGeoJson = {
+    ...geoJson,
+    features: geoJson.features.filter((feature) =>
+      feature.properties.id !== id
     )
   }
   setGeoJson(filteredGeoJson)

@@ -126,4 +126,11 @@ export const styles = {
         display: 'flex',
         position: 'absolute',
     },
+    eraserButton: {
+        backgroundColor: 'white',
+        bottom: 350,
+        right: 30,
+        display: 'flex',
+        position: 'absolute',
+    },
 }
