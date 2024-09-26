@@ -9,7 +9,7 @@ import { TouchableOpacity } from 'react-native';
 import FontAwesomeI from 'react-native-vector-icons/MaterialCommunityIcons'
 import * as FileSystem from 'expo-file-system';
 
-import { getLocalFile, shareFile, downloadKML, readLocationFile } from './LocalFiles';
+import { getLocalFile, shareFile, downloadKML } from './LocalFiles';
 
 
 import * as translate from './GeoDocs';
@@ -18,14 +18,14 @@ import { GlobalStateContext } from './Context';
 
 
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default function Sidebar(props) {
-  const [translateX] = useState(new Animated.Value(props.open ? 0.6 * width : width));
+  const [translateX] = useState(new Animated.Value(props.open ? 0.6 * width : width + 1000));
 
   const [hasSavedFile, setHasSavedFile] = useState(false);
 
-  const { isDrawing, setIsDrawing } = useContext(GlobalStateContext);
+  const { setIsDrawing, setGeoJson } = useContext(GlobalStateContext);
 
   const checkSavedFile = async () => {
     const directories = await FileSystem.readDirectoryAsync(FileSystem.documentDirectory);
@@ -81,7 +81,7 @@ export default function Sidebar(props) {
               try {
                 let fileKML = await getLocalFile();
                 let fileGeoJSON = await translate.KML2GeoJSON(fileKML);
-                props.setGeoJson(fileGeoJSON)
+                setGeoJson(fileGeoJSON)
               }
               catch (err) {
                 console.log("err:", err)
@@ -108,7 +108,7 @@ export default function Sidebar(props) {
             style={styles.sideBarTouchable}
             onPress={() => props.setLayerModalVisible(true)}
           >
-            <FontAwesomeI name="import" size={25} color="black" />
+            <FontAwesomeI name="map-search" size={25} color="black" />
             <Text style={styles.sideBarText}>Alternar camada</Text>
           </TouchableOpacity>
         </View>

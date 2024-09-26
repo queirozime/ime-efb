@@ -97,7 +97,7 @@ export const styles = {
         right: 30,
         display: 'flex',
         position: 'absolute',
-    },  
+    },
     drawCircleButton: {
         backgroundColor: 'white',
         bottom: 190,
@@ -115,7 +115,14 @@ export const styles = {
     colorPickerButton: {
         backgroundColor: 'white',
         bottom: 30,
-        right: 110,
+        left: 30,
+        display: 'flex',
+        position: 'absolute',
+    },
+    garbageButton: {
+        backgroundColor: 'white',
+        bottom: 110,
+        left: 30,
         display: 'flex',
         position: 'absolute',
     },

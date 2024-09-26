@@ -1,5 +1,5 @@
 import { StyleSheet, View, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Icon from 'react-native-vector-icons/FontAwesome'
 
@@ -9,17 +9,12 @@ import { Animated } from 'react-native';
 import ExportFileButton from './ButtonExport';
 import MapLayerValue from './MapLayerValue';
 import { GlobalStateProvider } from './Context';
-import { GlobalStateContext } from './Context';
 
 
 
 export default function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [geoJson, setGeoJson] = useState({
-    "type": "FeatureCollection",
-    "features": [],
-  })
   const [modalExportVisible, setModalExportVisible] = useState(false);
 
   const [isSelectLayerValueOpen, setIsSelectLayerValueOpen] = useState(false);
@@ -63,21 +58,15 @@ export default function App() {
                 <Icon name="bars" size={30} color="rgba(0,0,0,0.5)" />
               </TouchableOpacity>}
             </View>
-            <Map
-              geoJson={geoJson}
-              setGeoJson={setGeoJson}
-            />
+            <Map />
           </Animated.View>
           <Sidebar
             open={sidebarOpen}
-            setGeoJson={setGeoJson}
-            geoJson={geoJson}
             modalVisible={modalExportVisible}
             setModalVisible={setModalExportVisible}
             setLayerModalVisible={setIsSelectLayerValueOpen}
           />
           <ExportFileButton
-            geoJson={geoJson}
             modalVisible={modalExportVisible}
             setModalVisible={setModalExportVisible}
           />

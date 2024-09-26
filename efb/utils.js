@@ -88,3 +88,29 @@ export const exportKML = async (geoJson) => {
   let fileUri = await downloadKML(kmlData, fileName + ".kml")
   await shareFile(fileUri)
 }
+
+export function getDistanceHaversine(coord1, coord2) {
+  const R = 6371e3;
+  const lat1 = coord1.latitude * Math.PI / 180;
+  const lat2 = coord2.latitude * Math.PI / 180;
+  const delta_lat = (coord2.latitude - coord1.latitude) * Math.PI / 180;
+  const delta_long = (coord2.longitude - coord1.longitude) * Math.PI / 180;
+
+  const a = Math.sin(delta_lat / 2) * Math.sin(delta_lat / 2) +
+    Math.cos(lat1) * Math.cos(lat2) *
+    Math.sin(delta_long / 2) * Math.sin(delta_long / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  const d = R * c;
+  return d;
+}
+
+export const removePolygonsAndLineStrings = (geoJson, setGeoJson) => {
+  const filteredGeoJson = {
+    ...geoJson,
+    features: geoJson.features.filter((feature) =>
+      feature.geometry.type !== "Polygon" && feature.geometry.type !== "LineString"
+    )
+  }
+  setGeoJson(filteredGeoJson)
+}

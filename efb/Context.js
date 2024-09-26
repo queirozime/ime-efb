@@ -1,6 +1,5 @@
 import React, { createContext, useState } from 'react';
 
-// Create a context
 export const GlobalStateContext = createContext();
 
 export const GlobalStateProvider = ({ children }) => {
@@ -8,6 +7,10 @@ export const GlobalStateProvider = ({ children }) => {
     const [isDrawingCircle, setIsDrawingCircle] = useState(false);
     const [isDrawingPolygon, setIsDrawingPolygon] = useState(false);
     const [mapLayerValue, setMapLayerValue] = useState('ctm250');
+    const [geoJson, setGeoJson] = useState({
+        "type": "FeatureCollection",
+        "features": [],
+    })
 
     return (
         <GlobalStateContext.Provider
@@ -16,6 +19,7 @@ export const GlobalStateProvider = ({ children }) => {
                 isDrawingCircle, setIsDrawingCircle,
                 isDrawingPolygon, setIsDrawingPolygon,
                 mapLayerValue, setMapLayerValue,
+                geoJson, setGeoJson,
             }}
         >
             {children}

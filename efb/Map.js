@@ -7,9 +7,8 @@ import * as FileSystem from 'expo-file-system';
 import FontAwesomeI from 'react-native-vector-icons/FontAwesome'
 import FontAwesome5I from 'react-native-vector-icons/FontAwesome5'
 import MaterialCommunityIconsI from 'react-native-vector-icons/MaterialCommunityIcons'
-import ColorPicker, { Panel1, Swatches, Preview, OpacitySlider, HueSlider } from 'reanimated-color-picker';
 
-import { buildGeoJsonFromCoordinates, updateGeoJsonFromDrawing } from './utils';
+import { buildGeoJsonFromCoordinates, updateGeoJsonFromDrawing, getDistanceHaversine, removePolygonsAndLineStrings } from './utils';
 import RecordManager from './RecordManager';
 import DrawColorPicker from './DrawColorPicker';
 import { styles } from './styles';
@@ -25,6 +24,8 @@ export default function Map(props) {
     isDrawingPolygon,
     setIsDrawingPolygon,
     mapLayerValue,
+    geoJson,
+    setGeoJson,
   } = useContext(GlobalStateContext);
 
   const [isFollowingUser, setIsFollowingUser] = useState(true);
@@ -58,11 +59,6 @@ export default function Map(props) {
   const [polygons, setPolygons] = useState([]);
   const [polygon, setPolygon] = useState({});
 
-  const [lines, setLines] = useState([]);
-  const [line, setLine] = useState({});
-
-  const [markers, setMarkers] = useState([]);
-
   const [recordManagerModalOpen, setRecordManagerModalOpen] = useState(false);
   const [colorModalOpen, setColorModalOpen] = useState(false);
 
@@ -71,8 +67,8 @@ export default function Map(props) {
   const savePolyline = () => {
     if (polyline.coords && polyline.coords.length > 1) {
       setPolylines([...polylines, polyline]);
-      let updatedGeoJson = updateGeoJsonFromDrawing(props.geoJson, "polyline", polyline);
-      props.setGeoJson(updatedGeoJson);
+      let updatedGeoJson = updateGeoJsonFromDrawing(geoJson, "polyline", polyline);
+      setGeoJson(updatedGeoJson);
     }
     setPolyline({});
   }
@@ -80,8 +76,8 @@ export default function Map(props) {
   const savePolygon = () => {
     if (polygon.coords && polygon.coords.length > 1) {
       setPolygons([...polygons, polygon]);
-      let updatedGeoJson = updateGeoJsonFromDrawing(props.geoJson, "polygon", polygon);
-      props.setGeoJson(updatedGeoJson);
+      let updatedGeoJson = updateGeoJsonFromDrawing(geoJson, "polygon", polygon);
+      setGeoJson(updatedGeoJson);
     }
     setPolygon({});
   }
@@ -89,26 +85,10 @@ export default function Map(props) {
   const saveCircle = () => {
     if (circle.center && circle.radius > 0) {
       setCircles([...circles, circle]);
-      let updatedGeoJson = updateGeoJsonFromDrawing(props.geoJson, "circle", circle);
-      props.setGeoJson(updatedGeoJson);
+      let updatedGeoJson = updateGeoJsonFromDrawing(geoJson, "circle", circle);
+      setGeoJson(updatedGeoJson);
     }
     setCircle({});
-  }
-
-  function getDistanceHaversine(coord1, coord2) {
-    const R = 6371e3;
-    const lat1 = coord1.latitude * Math.PI / 180;
-    const lat2 = coord2.latitude * Math.PI / 180;
-    const delta_lat = (coord2.latitude - coord1.latitude) * Math.PI / 180;
-    const delta_long = (coord2.longitude - coord1.longitude) * Math.PI / 180;
-
-    const a = Math.sin(delta_lat / 2) * Math.sin(delta_lat / 2) +
-      Math.cos(lat1) * Math.cos(lat2) *
-      Math.sin(delta_long / 2) * Math.sin(delta_long / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    const d = R * c;
-    return d;
   }
 
 
@@ -251,8 +231,6 @@ export default function Map(props) {
     return !isDrawing && !isDrawingCircle && !isDrawingPolygon;
   }
 
-
-
   return (
     <View
       style={styles.container}
@@ -270,18 +248,18 @@ export default function Map(props) {
         onTouchEnd={handleTouchEnd}
         onRegionChange={() => { setIsFollowingUser(false) }}
       >
-      
-        <UrlTile urlTemplate={`http://3.141.195.194:5000/{z}/{x}/{y}?&layer=${mapLayerValue}`} shouldReplaceMapContent={false} 
+
+        <UrlTile urlTemplate={`http://3.141.195.194:5000/{z}/{x}/{y}?&layer=${mapLayerValue}`} shouldReplaceMapContent={false}
           zIndex={0}
           key={`url-${mapLayerValue}`}
-         />
+        />
         {polyline.coords && polyline.coords.length > 1 && <Polyline coordinates={polyline.coords} strokeColor={drawColor} strokeWidth={drawWidth} key={`geojson-${mapLayerValue}-${polyline.coords}`}
           zIndex={1}
         />}
-        {polygon.coords && polygon.coords.length > 1 && <Polygon coordinates={polygon.coords} strokeColor={drawColor} strokeWidth={drawWidth} fillColor={fillColor} key={`gon-${mapLayerValue}-${polygon.coords}`}  zIndex={1}/>}
-        {circle.radius > 0 && <Circle center={circle.center} radius={circle.radius} strokeColor={drawColor} strokeWidth={drawWidth} fillColor={fillColor} key={`circle-${mapLayerValue}-${circle.center}`}  zIndex={1}/>}
+        {polygon.coords && polygon.coords.length > 1 && <Polygon coordinates={polygon.coords} strokeColor={drawColor} strokeWidth={drawWidth} fillColor={fillColor} key={`gon-${mapLayerValue}-${polygon.coords}`} zIndex={1} />}
+        {circle.radius > 0 && <Circle center={circle.center} radius={circle.radius} strokeColor={drawColor} strokeWidth={drawWidth} fillColor={fillColor} key={`circle-${mapLayerValue}-${circle.center}`} zIndex={1} />}
         <Geojson
-          geojson={props.geoJson}
+          geojson={geoJson}
           tracksViewChanges={true}
           key={`geojson-${mapLayerValue}`}
           zIndex={1}
@@ -350,6 +328,15 @@ export default function Map(props) {
         ]}
       >
         <MaterialCommunityIconsI name="palette-outline" size={30} color='black' position='absolute' />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => removePolygonsAndLineStrings(geoJson, setGeoJson)}
+        style={[
+          styles.circleButton,
+          styles.garbageButton,
+        ]}
+      >
+        <MaterialCommunityIconsI name="delete" size={30} color='gray' position='absolute' />
       </TouchableOpacity>
       <RecordManager
         modalVisible={recordManagerModalOpen}
