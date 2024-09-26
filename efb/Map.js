@@ -7,8 +7,9 @@ import * as FileSystem from 'expo-file-system';
 import FontAwesomeI from 'react-native-vector-icons/FontAwesome'
 import FontAwesome5I from 'react-native-vector-icons/FontAwesome5'
 import MaterialCommunityIconsI from 'react-native-vector-icons/MaterialCommunityIcons'
+import uuid from 'react-native-uuid';
 
-import { buildGeoJsonFromCoordinates, updateGeoJsonFromDrawing, getDistanceHaversine, removePolygonsAndLineStrings } from './utils';
+import { buildGeoJsonFromCoordinates, updateGeoJsonFromDrawing, getDistanceHaversine, removePolygonsAndLineStrings, removeFromGeoJsonById } from './utils';
 import RecordManager from './RecordManager';
 import DrawColorPicker from './DrawColorPicker';
 import { styles } from './styles';
@@ -23,6 +24,8 @@ export default function Map(props) {
     setIsDrawingCircle,
     isDrawingPolygon,
     setIsDrawingPolygon,
+    isErasing,
+    setIsErasing,
     mapLayerValue,
     geoJson,
     setGeoJson,
@@ -94,11 +97,11 @@ export default function Map(props) {
 
   function onTouchStart(coordinate) {
     if (isDrawing) {
-      setPolyline({ coords: [coordinate], strokeColor: drawColor, strokeWidth: drawWidth });
+      setPolyline({ coords: [coordinate], strokeColor: drawColor, strokeWidth: drawWidth, id: uuid.v1() });
     } else if (isDrawingCircle) {
-      setCircle({ center: coordinate, radius: 0, strokeColor: drawColor, strokeWidth: drawWidth, fillColor: fillColor });
+      setCircle({ center: coordinate, radius: 0, strokeColor: drawColor, strokeWidth: drawWidth, fillColor: fillColor, id: uuid.v1() });
     } else if (isDrawingPolygon) {
-      setPolygon({ coords: [coordinate], strokeColor: drawColor, strokeWidth: drawWidth, fillColor: fillColor });
+      setPolygon({ coords: [coordinate], strokeColor: drawColor, strokeWidth: drawWidth, fillColor: fillColor, id: uuid.v1() });
     }
   }
 
@@ -200,22 +203,42 @@ export default function Map(props) {
     setIsDrawing(!isDrawing);
     setIsDrawingCircle(false);
     setIsDrawingPolygon(false);
+    setIsErasing(false);
   }
 
   const handleCircleDrawing = () => {
     setIsDrawing(false);
     setIsDrawingCircle(!isDrawingCircle);
     setIsDrawingPolygon(false);
+    setIsErasing(false);
   }
 
   const handlePolygonDrawing = () => {
     setIsDrawing(false);
     setIsDrawingCircle(false);
     setIsDrawingPolygon(!isDrawingPolygon);
+    setIsErasing(false);
+  }
+
+  const handleToggleErasing = () => {
+    setIsDrawing(false);
+    setIsDrawingCircle(false);
+    setIsDrawingPolygon(false);
+    setIsErasing(!isErasing);
   }
 
   const handleToggleColorPicker = () => {
     setColorModalOpen(!colorModalOpen);
+  }
+  
+  const shouldScrollMap = () => {
+    return !isDrawing && !isDrawingCircle && !isDrawingPolygon && !isErasing;
+  }
+
+  const handleGeoJsonPress = (event) => {
+    if (isErasing) {
+      removeFromGeoJsonById(geoJson, setGeoJson, event.feature.properties.id);
+    }
   }
 
   useEffect(() => {
@@ -227,9 +250,6 @@ export default function Map(props) {
     checkExistingFile();
   }, [hasSavedFile, isDrawing, mapLayerValue]);
 
-  const shouldScrollMap = () => {
-    return !isDrawing && !isDrawingCircle && !isDrawingPolygon;
-  }
 
   return (
     <View
@@ -248,7 +268,6 @@ export default function Map(props) {
         onTouchEnd={handleTouchEnd}
         onRegionChange={() => { setIsFollowingUser(false) }}
       >
-
         <UrlTile urlTemplate={`http://3.141.195.194:5000/{z}/{x}/{y}?&layer=${mapLayerValue}`} shouldReplaceMapContent={false}
           zIndex={0}
           key={`url-${mapLayerValue}`}
@@ -263,6 +282,7 @@ export default function Map(props) {
           tracksViewChanges={true}
           key={`geojson-${mapLayerValue}`}
           zIndex={1}
+          onPress={handleGeoJsonPress}
         />
       </MapView>
       <TouchableOpacity
@@ -318,6 +338,19 @@ export default function Map(props) {
         ]}
       >
         <FontAwesome5I name="draw-polygon" size={40} color={isDrawingPolygon ? "white" : "gray"} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={handleToggleErasing}
+        style={[
+          styles.circleButton,
+          styles.eraserButton,
+          {
+            position: 'absolute',
+            backgroundColor: isErasing ? "rgba(74, 74, 74, 0.3)" : "white"
+          }
+        ]}
+      >
+        <FontAwesome5I name="eraser" size={40} color={isErasing ? "white" : "gray"} />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={handleToggleColorPicker}
