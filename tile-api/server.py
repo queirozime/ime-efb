@@ -1,4 +1,5 @@
 from flask import Flask, send_file, abort, request
+from flask_caching import Cache
 import math
 import requests
 import os
@@ -7,8 +8,15 @@ from io import BytesIO
 import xml.etree.ElementTree as ET
 import json
 
+config = {
+    "DEBUG": True,
+    "CACHE_TYPE": "SimpleCache",
+    "CACHE_DEFAULT_TIMEOUT": 86400
+}
 
 app = Flask(__name__)
+app.config.from_mapping(config)
+cache = Cache(app)
 
 @app.route('/local/<path:file_path>', methods=['GET'])
 def download_file(file_path):
