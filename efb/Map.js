@@ -8,6 +8,7 @@ import FontAwesomeI from 'react-native-vector-icons/FontAwesome'
 import FontAwesome5I from 'react-native-vector-icons/FontAwesome5'
 import MaterialCommunityIconsI from 'react-native-vector-icons/MaterialCommunityIcons'
 import uuid from 'react-native-uuid';
+import * as Network from 'expo-network';
 
 import { buildGeoJsonFromCoordinates, updateGeoJsonFromDrawing, getDistanceHaversine, removePolygonsAndLineStrings, removeFromGeoJsonById } from './utils';
 import RecordManager from './RecordManager';
@@ -29,6 +30,7 @@ export default function Map(props) {
     mapLayerValue,
     geoJson,
     setGeoJson,
+    offlineMode,
   } = useContext(GlobalStateContext);
 
   const [isFollowingUser, setIsFollowingUser] = useState(true);
@@ -230,7 +232,7 @@ export default function Map(props) {
   const handleToggleColorPicker = () => {
     setColorModalOpen(!colorModalOpen);
   }
-  
+
   const shouldScrollMap = () => {
     return !isDrawing && !isDrawingCircle && !isDrawingPolygon && !isErasing;
   }
@@ -248,7 +250,7 @@ export default function Map(props) {
     };
 
     checkExistingFile();
-  }, [hasSavedFile, isDrawing, mapLayerValue]);
+  }, [hasSavedFile, isDrawing, mapLayerValue, offlineMode]);
 
 
   return (
@@ -271,6 +273,9 @@ export default function Map(props) {
         <UrlTile urlTemplate={`http://3.141.195.194:5000/{z}/{x}/{y}?&layer=${mapLayerValue}`} shouldReplaceMapContent={false}
           zIndex={0}
           key={`url-${mapLayerValue}`}
+          offlineMode={offlineMode}
+          tileCacheMaxAge={86400}
+          tileCachePath={FileSystem.cacheDirectory + mapLayerValue}
         />
         {polyline.coords && polyline.coords.length > 1 && <Polyline coordinates={polyline.coords} strokeColor={drawColor} strokeWidth={drawWidth} key={`geojson-${mapLayerValue}-${polyline.coords}`}
           zIndex={1}

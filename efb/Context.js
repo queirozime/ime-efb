@@ -12,6 +12,7 @@ export const GlobalStateProvider = ({ children }) => {
         "type": "FeatureCollection",
         "features": [],
     })
+    const [offlineMode, setOfflineMode] = useState(false);
 
     return (
         <GlobalStateContext.Provider
@@ -22,6 +23,7 @@ export const GlobalStateProvider = ({ children }) => {
                 isErasing, setIsErasing,
                 mapLayerValue, setMapLayerValue,
                 geoJson, setGeoJson,
+                offlineMode, setOfflineMode,
             }}
         >
             {children}
